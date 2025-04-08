@@ -38,6 +38,16 @@ export const getTheme = (): ThemeOptions => {
             '&:disabled': {
               backgroundColor: cssVar("--primary-color-light"),
             },
+            '&:hover': {
+              backgroundColor: cssVar("--primary-color-dark"),
+            },
+            '&.MuiButton-text': {
+              color: cssVar("--text-color"),
+              backgroundColor: "transparent",
+              '&:hover': {
+                color: cssVar("--text-color-dark"),
+              },
+            },
           },
         },
       },

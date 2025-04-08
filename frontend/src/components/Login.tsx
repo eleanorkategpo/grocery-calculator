@@ -15,6 +15,8 @@ import GroceryLogo from "../assets/groceries.svg";
 import InputAdornment from "@mui/material/InputAdornment";
 import { EmailOutlined, LockOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import axios, { AxiosResponse } from "axios";
+import { enqueueSnackbar } from "notistack";
 
 const Login = () => {
   const theme = createTheme();
@@ -30,9 +32,6 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Simulate authentication - replace with actual auth logic
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
       // Simple validation
       if (!email || !password) {
         throw new Error("Please fill in all fields");
@@ -46,8 +45,22 @@ const Login = () => {
         throw new Error("Password must be at least 6 characters");
       }
 
-      // Success - would normally store tokens, redirect, etc.
-      alert("Login successful!");
+      axios
+        .post(`${import.meta.env.VITE_API_URL}/auth/login`, {
+          email,
+          password,
+        })
+        .then((res: AxiosResponse) => {
+          enqueueSnackbar("Login successful!", {
+            variant: "success",
+          });
+          navigate("/dashboard");
+        })
+        .catch((err) => {
+          enqueueSnackbar(err.message, {
+            variant: "error",
+          });
+        });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
@@ -153,7 +166,11 @@ const Login = () => {
           <Box sx={{ textAlign: "center", mt: 1 }}>
             <Typography variant="body2">
               Don't have an account?{" "}
-              <Link onClick={() => navigate("/register")} variant="body2" color="primary">
+              <Link
+                onClick={() => navigate("/register")}
+                variant="body2"
+                color="primary"
+              >
                 Sign Up
               </Link>
             </Typography>

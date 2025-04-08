@@ -35,9 +35,13 @@ export const getTheme = (): ThemeOptions => {
         styleOverrides: {
           root: {
             backgroundColor: cssVar("--primary-color"),
+            '&:disabled': {
+              backgroundColor: cssVar("--primary-color-light"),
+            },
           },
         },
       },
+  
       MuiTextField: {
         styleOverrides: {
           root: {

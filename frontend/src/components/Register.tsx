@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from "react";
 import {
   Box,
   Button,
@@ -8,63 +8,80 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-} from '@mui/material';
-
+} from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { UserSchema } from "../constants/Schema";
+import axios from "axios";
+import { enqueueSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
 const Register = () => {
   const theme = createTheme();
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const navigate = useNavigate();
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      email: "",
+      password: "",
+      passwordConfirm: "",
+      role: "user",
+      createdAt: new Date(),
+      active: true,
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().required("Name is required"),
+      email: Yup.string()
+        .email("Invalid email address")
+        .required("Email is required"),
+      password: Yup.string()
+        .min(8, "Password must be at least 8 characters")
+        .required("Password is required"),
+      passwordConfirm: Yup.string()
+        .oneOf([Yup.ref("password")], "Passwords must match")
+        .required("Confirm Password is required"),
+    }),
+    onSubmit: async (
+      values: UserSchema,
+      { setSubmitting }: { setSubmitting: (submitting: boolean) => void }
+    ) => {
+      axios
+        .post(`${import.meta.env.VITE_API_URL}/auth/signup`, values)
+        .then((res) => {
+          enqueueSnackbar(
+            "Successfully registered user. Please proceed to login.",
+            {
+              variant: "success",
+            }
+          );
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+          navigate("/");
+        })
+        .catch((err) => {
+          enqueueSnackbar(err.response.data.message, {
+            variant: "error",
+          });
+        });
 
-    try {
-      // Simulate registration - replace with actual registration logic
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Simple validation
-      if (!email || !name || !password) {
-        throw new Error('Please fill in all fields');
-      }
-
-      if (!email.includes('@')) {
-        throw new Error('Please enter a valid email');
-      }
-
-      if (password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
-      }
-
-      // Success - would normally store tokens, redirect, etc.
-      alert('Registration successful!');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+      setSubmitting(false);
+    },
+  });
 
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
       }}
     >
       <Paper
         elevation={3}
         sx={{
           p: isMobile ? 2 : 4,
-          width: '100%',
+          width: "100%",
           borderRadius: 2,
         }}
       >
@@ -72,13 +89,7 @@ const Register = () => {
           Register
         </Typography>
 
-        {error && (
-          <Typography color="error" align="center" sx={{ mb: 2 }}>
-            {error}
-          </Typography>
-        )}
-
-        <Box component="form" onSubmit={handleRegister} noValidate>
+        <Box component="form" onSubmit={formik.handleSubmit} noValidate>
           <TextField
             margin="normal"
             required
@@ -88,9 +99,11 @@ const Register = () => {
             name="name"
             autoComplete="name"
             autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={loading}
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
           />
           <TextField
             margin="normal"
@@ -100,9 +113,11 @@ const Register = () => {
             label="Email Address"
             name="email"
             autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            helperText={formik.touched.email && formik.errors.email}
           />
           <TextField
             margin="normal"
@@ -113,18 +128,40 @@ const Register = () => {
             type="password"
             id="password"
             autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.password && Boolean(formik.errors.password)}
+            helperText={formik.touched.password && formik.errors.password}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="passwordConfirm"
+            label="Confirm Password"
+            type="password"
+            id="passwordConfirm"
+            autoComplete="current-password"
+            value={formik.values.passwordConfirm}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={
+              formik.touched.passwordConfirm &&
+              Boolean(formik.errors.passwordConfirm)
+            }
+            helperText={
+              formik.touched.passwordConfirm && formik.errors.passwordConfirm
+            }
           />
           <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
-            disabled={loading}
+            disabled={formik.isSubmitting || !formik.isValid}
           >
-            {loading ? <CircularProgress size={24} /> : 'Register'}
+            {formik.isSubmitting ? <CircularProgress size={24} /> : "Register"}
           </Button>
         </Box>
       </Paper>

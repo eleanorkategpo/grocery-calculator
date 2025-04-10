@@ -1,11 +1,10 @@
-import React from 'react';
 import { Box, Typography, Grid, Paper } from '@mui/material';
 import DashboardLayout from '../components/Dashboard/DashboardLayout';
 
 const Dashboard = () => {
   return (
     <DashboardLayout>
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: { xs: 2, md: 4 } }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Dashboard
         </Typography>

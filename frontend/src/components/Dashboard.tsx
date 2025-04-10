@@ -1,7 +1,10 @@
 import {
   AppBar,
   Toolbar,
-  IconButton, Box
+  IconButton, Box,
+  Menu,
+  MenuItem,
+  Button
 } from "@mui/material";
 import MyCart from "./Dashboard/MyCart";
 import Footer from "./Dashboard/Footer";
@@ -14,7 +17,21 @@ import LoadingOverlay from "./shared/LoadingOverlay";
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const menuItems = [
+    {
+      text: "My Profile",
+      path: "/profile",
+    },
+    {
+      text: "My Cart",
+      path: "/dashboard",
+    },
+    {
+      text: "Receipts",
+      path: "/receipts",
+    },
+  ];
   const [loading, setLoading] = useState(false);
 
   const handleCheckout = () => {
@@ -23,6 +40,16 @@ const Dashboard = () => {
       setLoading(false);
     }, 3000);
   };
+
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMenuItemClick = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <Box
       sx={{
@@ -50,23 +77,38 @@ const Dashboard = () => {
             color="primary"
             aria-label="menu"
             sx={{ mr: 2 }}
-            onClick={() => setOpen(true)}
+            onClick={(event) => setAnchorEl(event.currentTarget)}
           >
             <MenuIcon />
           </IconButton>
-          <IconButton
-            size="large"
-            edge="start"
+          <Button
+            variant="contained"
             color="primary"
             aria-label="menu"
-            sx={{ mr: 2 }}
+            sx={{ mr: 2, fontSize: 14 }}
             onClick={() => handleCheckout()}
           >
             <CartIcon />
-          </IconButton>
+            Checkout
+          </Button>
         </Toolbar>
+
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          {menuItems.map((item) => (
+            <MenuItem
+              key={item.text}
+              onClick={() => handleMenuItemClick(item.path)}
+            >
+              {item.text}
+            </MenuItem>
+          ))}
+        </Menu>
       </AppBar>
-      <SideBar open={open} setOpen={setOpen} />
+
       <MyCart />
       <Footer />
     </Box>

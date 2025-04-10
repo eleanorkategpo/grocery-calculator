@@ -16,10 +16,15 @@ dotenv.config({ path: './.env' });
 const app = express();
 const PORT = process.env.PORT || 5000;
 // Middleware
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "*",
+    // origin: "http://localhost:5173",
+    // origin: "http://192.168.1.44:3000",
+    // origin: "http://172.28.64.1:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
@@ -30,6 +35,7 @@ app.use('/api/users', userRoutes);
 
 // Health check route
 app.get('/api/healthcheck', (req, res) => {
+  console.log(res)
   res.status(200).json({ status: 'success', message: 'API is running' });
 });
 

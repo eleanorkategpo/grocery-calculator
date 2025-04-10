@@ -13,7 +13,8 @@ export type UserSchema = {
 
 export type CartItem = {
   id: string;
-  name: string;
+  barcode: string;
+  description: string;
   price: number;
   quantity: number;
 };

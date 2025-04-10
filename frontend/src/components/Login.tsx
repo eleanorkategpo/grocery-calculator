@@ -10,7 +10,7 @@ import {
   Typography,
   useMediaQuery,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import GroceryLogo from "../assets/groceries.svg";
 import InputAdornment from "@mui/material/InputAdornment";
 import { EmailOutlined, LockOutlined } from "@mui/icons-material";
@@ -26,6 +26,23 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+
+
+  useEffect(() => {
+    axios.get(`${import.meta.env.VITE_API_URL}/healthcheck`)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        debugger
+        enqueueSnackbar(JSON.stringify(err), {
+          variant: "error",
+        });
+        console.log(err);
+      });
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -75,6 +92,7 @@ const Login = () => {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
+        p: 2
       }}
     >
       <Stack

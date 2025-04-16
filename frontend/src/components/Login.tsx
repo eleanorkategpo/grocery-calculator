@@ -30,17 +30,7 @@ const Login = () => {
 
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/healthcheck`)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        debugger
-        enqueueSnackbar(JSON.stringify(err), {
-          variant: "error",
-        });
-        console.log(err);
-      });
+    localStorage.removeItem("user");
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -68,6 +58,7 @@ const Login = () => {
           password,
         })
         .then((res: AxiosResponse) => {
+          localStorage.setItem("user", JSON.stringify(res.data));
           enqueueSnackbar("Login successful!", {
             variant: "success",
           });

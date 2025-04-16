@@ -8,6 +8,11 @@ import {
   Modal,
   IconButton,
   InputLabel,
+  Tooltip,
+  MenuItem,
+  Select,
+  FormControl,
+  Divider,
 } from "@mui/material";
 import UserStore from "../../store/UserStore";
 import { Formik, Form } from "formik";
@@ -17,7 +22,16 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import CloseIcon from "@mui/icons-material/Close";
 import CurrencyInput from "react-currency-input-field";
 import OCRCamera from "../shared/OCRCamera";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
+import axios from "axios";
+import React, { useRef, useState } from "react";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import { enqueueSnackbar } from "notistack";
+import { useParams } from "react-router-dom";
 
+
+
+const API_URL = import.meta.env.VITE_API_URL;
 const BoxStyled = styled(Box)(() => ({
   backgroundColor: "white",
   padding: 20,
@@ -26,21 +40,21 @@ const BoxStyled = styled(Box)(() => ({
   flexDirection: "column",
   gap: 10,
   alignItems: "center",
-  justifyContent: "center",
   margin: "0 auto",
   width: "90%",
   maxWidth: 500,
-  height: "100%",
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-
+  height: "fit-content",
 }));
 
 const AddModal = () => {
   const userStore = UserStore();
-
+  const priceInputRef = useRef<HTMLInputElement>(null);
+  const { groceryId } = useParams();
+  const [loading, setLoading] = useState(false);
   // Validation schema using Yup
   const validationSchema = Yup.object().shape({
     barcode: Yup.string().required("Barcode is required"),
@@ -52,14 +66,50 @@ const AddModal = () => {
       .required("Quantity is required")
       .positive("Quantity must be positive")
       .integer("Quantity must be an integer"),
+    unit: Yup.string().required("Unit is required"),
   });
-
-  const handleBarcodeClick = () => {
-    console.log("Barcode clicked");
-  };
 
   const handleClose = () => {
     userStore.setOpenAddModal(false);
+  };
+
+  const randomizeBarcode = (
+    setFieldValue?: (field: string, value: any) => void
+  ) => {
+    const value = "BARCODE-" + Math.random().toString(36).substring(2, 6);
+    if (setFieldValue) {
+      setFieldValue("barcode", value);
+    } else {
+      return value;
+    }
+  };
+
+  const handleSubmit = (values: any) => {
+    const body = {
+      ...values,
+      groceryId: groceryId,
+      total: Number(values.price) * Number(values.quantity),
+    }
+    setLoading(true);
+    axios
+      .post(`${API_URL}/grocery/new-item`, body)
+      .then((res) => {
+        if (res.status === 201) {
+          enqueueSnackbar("Item added successfully", {
+            variant: "success",
+          });
+          handleClose();
+          userStore.setCartItems([...userStore.cartItems, res.data.data.groceryItem]);
+        }
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.response.data.message, {
+          variant: "error",
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
   return (
     <Modal open={userStore.openAddModal} onClose={handleClose}>
@@ -73,7 +123,6 @@ const AddModal = () => {
             position: "absolute",
             top: 0,
             zIndex: 1000,
-            backgroundColor: "white",
             padding: 2,
             height: 50,
           }}
@@ -83,23 +132,26 @@ const AddModal = () => {
             <CloseIcon color="secondary" />
           </IconButton>
         </Stack>
-        <Box sx={{overflow: "auto", paddingTop: "60px"}}>
-          <Typography component="span">Scan Barcode</Typography>
-          <OCRCamera />
+        <Box sx={{ overflow: "auto", paddingTop: "40px", width: "100%" }}>
+          {/* <Typography component="span">Scan Barcode</Typography>
+          <OCRCamera /> */}
 
           <Formik
             initialValues={{
-              barcode: userStore.barcode || "",
+              barcode: randomizeBarcode(),
               description: "",
               price: "0.00",
               quantity: 1,
+              unit: "pc",
+              total: "0.00",
             }}
             enableReinitialize={true}
             validationSchema={validationSchema}
             onSubmit={(values) => {
               // Handle form submission
-              console.log("Form values:", values);
+              handleSubmit(values);
             }}
+            
           >
             {({
               handleChange,
@@ -111,8 +163,27 @@ const AddModal = () => {
               isValid,
             }) => (
               <Form>
-                <Stack direction="column" spacing={2} mt={2}>
-                  <InputLabel>Barcode</InputLabel>
+                <Stack direction="column" spacing={2}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <InputLabel>Barcode</InputLabel>
+                    <Tooltip title="Randomize Barcode">
+                      <IconButton
+                        onClick={() => randomizeBarcode(setFieldValue)}
+                        sx={{
+                          backgroundColor: "var(--primary-color)",
+                          color: "white",
+                          borderRadius: 10,
+                          padding: 1,
+                        }}
+                      >
+                        <ShuffleIcon sx={{ fontSize: 20 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
                   <TextField
                     name="barcode"
                     variant="outlined"
@@ -122,15 +193,12 @@ const AddModal = () => {
                     onBlur={handleBlur}
                     value={values.barcode}
                     error={touched.barcode && Boolean(errors.barcode)}
-                    onClick={handleBarcodeClick}
                     helperText={touched.barcode && errors.barcode}
-                    disabled={true}
                   />
                   <InputLabel>Item Description</InputLabel>
 
                   <TextField
-                    label="Name"
-                    name="name"
+                    name="description"
                     variant="outlined"
                     fullWidth
                     margin="normal"
@@ -162,8 +230,14 @@ const AddModal = () => {
                       fontWeight: 600,
                       color: "var(--text-color)",
                       padding: "0 10px",
-                      background: "black"
+                      background: "black",
                     }}
+                    onFocus={() => {
+                      if (priceInputRef.current) {
+                        priceInputRef.current.select();
+                      }
+                    }}
+                    ref={priceInputRef}
                   />
                   <InputLabel>Quantity</InputLabel>
                   <Stack
@@ -195,7 +269,11 @@ const AddModal = () => {
                       error={touched.quantity && Boolean(errors.quantity)}
                       helperText={touched.quantity && errors.quantity}
                       inputProps={{ min: 1 }}
-                      sx={{ flex: 1 }}
+                      sx={{
+                        flex: 1,
+                        minWidth: {xs: 100, md: 150},
+                        input: { textAlign: "center" },
+                      }}
                     />
                     <IconButton
                       color="primary"
@@ -205,21 +283,54 @@ const AddModal = () => {
                     >
                       <AddIcon />
                     </IconButton>
+                    <FormControl variant="outlined" fullWidth margin="normal">
+                      <InputLabel id="unit-label">Unit</InputLabel>
+                      <Select
+                        labelId="unit-label"
+                        name="unit"
+                        value={values.unit}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.unit && Boolean(errors.unit)}
+                        variant="filled"
+                      >
+                        <MenuItem value="kg">kg</MenuItem>
+                        <MenuItem value="pc">pc</MenuItem>
+                        <MenuItem value="g">g</MenuItem>
+                        <MenuItem value="lb">lb</MenuItem>
+                      </Select>
+                    </FormControl>
                   </Stack>
+                  <Divider sx={{ backgroundColor: "var(--secondary-color)" }} />
                   <Stack
                     direction="row"
-                    spacing={2}
-                    pt={4}
-                    justifyContent="center"
+                    justifyContent="space-between"
+                    alignItems="center"
                   >
+                    <Box>
+                      <InputLabel>Total Price</InputLabel>
+                      <Typography variant="h4">
+                        {" "}
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "PHP",
+                        }).format(
+                          Number(values.price) * Number(values.quantity)
+                        )}
+                      </Typography>
+                    </Box>
                     <Button
                       type="submit"
                       variant="contained"
                       disabled={!isValid}
                       color="primary"
                       size="large"
+                      sx={{
+                        borderRadius: 10,
+                        padding: 2,
+                      }}
                     >
-                      <AddIcon /> Add to Cart
+                      <AddShoppingCartIcon />
                     </Button>
                   </Stack>
                 </Stack>

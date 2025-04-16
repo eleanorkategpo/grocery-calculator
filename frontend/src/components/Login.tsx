@@ -17,6 +17,7 @@ import { EmailOutlined, LockOutlined } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios, { AxiosResponse } from "axios";
 import { enqueueSnackbar } from "notistack";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Login = () => {
   const theme = createTheme();
@@ -53,16 +54,17 @@ const Login = () => {
       }
 
       axios
-        .post(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        .post(`${API_URL}/auth/login`, {
           email,
           password,
         })
         .then((res: AxiosResponse) => {
+          axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
           localStorage.setItem("user", JSON.stringify(res.data));
           enqueueSnackbar("Login successful!", {
             variant: "success",
           });
-          navigate("/dashboard");
+          navigate("/dashboard/new-grocery");
         })
         .catch((err) => {
           enqueueSnackbar(err.message, {

@@ -1,16 +1,17 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
-import morgan from 'morgan';
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import morgan from "morgan";
 
 // Import routes
-import authRoutes from './routes/authRoutes.js';
-import userRoutes from './routes/userRoutes.js';
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import groceryRoutes from "./routes/groceryRoutes.js";
 
 // Load environment variables
-dotenv.config({ path: './.env' });
+dotenv.config({ path: "./.env" });
 
 // Initialize Express app
 const app = express();
@@ -27,27 +28,28 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
 // API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/grocery", groceryRoutes);
 
 // Health check route
-app.get('/api/healthcheck', (req, res) => {
-  console.log(res)
-  res.status(200).json({ status: 'success', message: 'API is running' });
+app.get("/api/healthcheck", (req, res) => {
+  console.log(res);
+  res.status(200).json({ status: "success", message: "API is running" });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const status = err.status || 'error';
+  const status = err.status || "error";
 
   res.status(statusCode).json({
     status,
     message: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });
 });
 
@@ -55,15 +57,15 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Connected to MongoDB');
-    
+    console.log("Connected to MongoDB");
+
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
+    console.error("Failed to connect to MongoDB:", error);
     process.exit(1);
   }
 };
 
-startServer(); 
+startServer();

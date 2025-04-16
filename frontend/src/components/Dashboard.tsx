@@ -1,38 +1,68 @@
 import {
   AppBar,
   Toolbar,
-  IconButton, Box,
+  IconButton,
+  Box,
   Menu,
   MenuItem,
-  Button
+  Button,
 } from "@mui/material";
-import MyCart from "./Dashboard/MyCart";
 import Footer from "./Dashboard/Footer";
-import SideBar from "./Dashboard/Sidebar";
 import MenuIcon from "@mui/icons-material/Menu";
 import CartIcon from "@mui/icons-material/ShoppingCart";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import LoadingOverlay from "./shared/LoadingOverlay";
+import axios from "axios";
+import Swal from "sweetalert2";
+const API_URL = import.meta.env.VITE_API_URL;
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [loading, setLoading] = useState(false);
+
+  const path = useLocation();
+  const inCart = path.pathname.includes("/cart");
+
   const menuItems = [
     {
-      text: "My Profile",
-      path: "/profile",
+      text: "Generate New Cart",
+      path: "/dashboard/new-grocery",
     },
     {
-      text: "My Cart",
-      path: "/dashboard",
+      text: "Previous Carts",
+      path: "/dashboard/previous-carts",
     },
     {
-      text: "Receipts",
-      path: "/receipts",
+      text: "Logout",
+      onClick: () => handleLogout(),
     },
   ];
-  const [loading, setLoading] = useState(false);
+
+  const handleLogout = () => {
+    setAnchorEl(null);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to logout?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .get(`${API_URL}/auth/logout`)
+          .then((res: any) => {
+            axios.defaults.headers.common["Authorization"] = null;
+            localStorage.removeItem("user");
+            navigate("/");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    });
+  };
 
   const handleCheckout = () => {
     setLoading(true);
@@ -41,13 +71,15 @@ const Dashboard = () => {
     }, 3000);
   };
 
-
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  const handleMenuItemClick = (path: string) => {
-    navigate(path);
+  const handleMenuItemClick = (path: string | undefined) => {
+    if (path) {
+      navigate(path);
+    }
+    handleMenuClose();
   };
 
   return (
@@ -62,7 +94,6 @@ const Dashboard = () => {
         left: 0,
         right: 0,
         bottom: 0,
-        paddingTop: "60px",
       }}
     >
       <LoadingOverlay loading={loading} />
@@ -81,7 +112,7 @@ const Dashboard = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Button
+          {inCart && <Button
             variant="contained"
             color="primary"
             aria-label="menu"
@@ -90,7 +121,7 @@ const Dashboard = () => {
           >
             <CartIcon />
             Checkout
-          </Button>
+          </Button>}
         </Toolbar>
 
         <Menu
@@ -101,16 +132,16 @@ const Dashboard = () => {
           {menuItems.map((item) => (
             <MenuItem
               key={item.text}
-              onClick={() => handleMenuItemClick(item.path)}
+              onClick={() => item.onClick?.() ?? handleMenuItemClick(item.path)}
             >
               {item.text}
             </MenuItem>
           ))}
         </Menu>
       </AppBar>
-
-      <MyCart />
-      <Footer />
+      <Box sx={{ flexGrow: 1, paddingTop: "60px"}}>
+        <Outlet />
+      </Box>
     </Box>
   );
 };

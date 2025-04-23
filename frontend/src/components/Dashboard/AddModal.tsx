@@ -28,8 +28,7 @@ import React, { useRef, useState } from "react";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { enqueueSnackbar } from "notistack";
 import { useParams } from "react-router-dom";
-
-
+import { Grocery } from "../../constants/Schema";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BoxStyled = styled(Box)(() => ({
@@ -89,7 +88,7 @@ const AddModal = () => {
       ...values,
       groceryId: groceryId,
       total: Number(values.price) * Number(values.quantity),
-    }
+    };
     setLoading(true);
     axios
       .post(`${API_URL}/grocery/new-item`, body)
@@ -99,7 +98,15 @@ const AddModal = () => {
             variant: "success",
           });
           handleClose();
-          userStore.setCartItems([...userStore.cartItems, res.data.data.groceryItem]);
+          if (userStore.groceryData) {
+            userStore.setGroceryData({
+              ...userStore.groceryData,
+              items: [
+                ...userStore.groceryData.items,
+                res.data.data.groceryItem,
+              ],
+            });
+          }
         }
       })
       .catch((err) => {
@@ -151,7 +158,6 @@ const AddModal = () => {
               // Handle form submission
               handleSubmit(values);
             }}
-            
           >
             {({
               handleChange,
@@ -271,7 +277,7 @@ const AddModal = () => {
                       inputProps={{ min: 1 }}
                       sx={{
                         flex: 1,
-                        minWidth: {xs: 100, md: 150},
+                        minWidth: { xs: 100, md: 150 },
                         input: { textAlign: "center" },
                       }}
                     />

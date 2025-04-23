@@ -5,25 +5,22 @@ import {
   Box,
   Menu,
   MenuItem,
-  Button,
+  Stack,
+  Typography,
 } from "@mui/material";
-import Footer from "./Dashboard/Footer";
 import MenuIcon from "@mui/icons-material/Menu";
-import CartIcon from "@mui/icons-material/ShoppingCart";
 import { useState } from "react";
-import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
 import LoadingOverlay from "./shared/LoadingOverlay";
 import axios from "axios";
 import Swal from "sweetalert2";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+
 const API_URL = import.meta.env.VITE_API_URL;
 const Dashboard = () => {
-  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(false);
-
-  const path = useLocation();
-  const inCart = path.pathname.includes("/cart");
 
   const menuItems = [
     {
@@ -62,13 +59,6 @@ const Dashboard = () => {
           });
       }
     });
-  };
-
-  const handleCheckout = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 3000);
   };
 
   const handleMenuClose = () => {
@@ -112,16 +102,12 @@ const Dashboard = () => {
           >
             <MenuIcon />
           </IconButton>
-          {inCart && <Button
-            variant="contained"
-            color="primary"
-            aria-label="menu"
-            sx={{ mr: 2, fontSize: 14 }}
-            onClick={() => handleCheckout()}
-          >
-            <CartIcon />
-            Checkout
-          </Button>}
+          <Stack direction="row" alignItems="center" gap={1}>
+            <ShoppingCartIcon color="primary" />
+            <Typography variant="subtitle2" color="primary">
+              YOUR GROCERY ASSISTANT
+            </Typography>
+          </Stack>
         </Toolbar>
 
         <Menu
@@ -139,7 +125,17 @@ const Dashboard = () => {
           ))}
         </Menu>
       </AppBar>
-      <Box sx={{ flexGrow: 1, paddingTop: "60px"}}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          paddingTop: "60px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+        }}
+      >
         <Outlet />
       </Box>
     </Box>

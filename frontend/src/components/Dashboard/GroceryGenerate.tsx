@@ -51,7 +51,6 @@ const GroceryGenerate = () => {
     event.preventDefault();
     setIsLoading(true);
     const grocery = {
-      id: uuidv4(),
       storeName: groceryStore,
       budget: noBudgetLimit ? null : budget,
       createdAt: new Date(),
@@ -63,7 +62,8 @@ const GroceryGenerate = () => {
         grocery
       )
       .then((response) => {
-        const id = response.data.data.grocery.id;
+        debugger
+        const id = response.data.data.grocery._id;
         navigate(`/dashboard/${id}/cart`);
       })
       .catch((error) => {
@@ -110,6 +110,7 @@ const GroceryGenerate = () => {
             maxWidth: 600,
             mx: "auto",
             m: 2,
+            minWidth: +300,
           }}
         >
           <Stack
@@ -195,8 +196,6 @@ const GroceryGenerate = () => {
                         setBudget(value);
                       }
                     }}
-                    decimalScale={2}
-                    fixedDecimalLength={2}
                     prefix="₱ "
                     placeholder="₱ 0.00"
                     disabled={noBudgetLimit}

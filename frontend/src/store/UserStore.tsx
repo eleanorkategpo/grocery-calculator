@@ -1,13 +1,15 @@
 import { create } from "zustand";
-import { GroceryItem } from "../constants/Schema";
+import { Grocery, GroceryItem } from "../constants/Schema";
 
 interface StoreState {
   openAddModal: boolean;
   setOpenAddModal: (open: boolean) => void;
   barcode: string;
   setBarcode: (barcode: string) => void;
-  cartItems: GroceryItem[];
-  setCartItems: (items: GroceryItem[]) => void;
+  groceryData: Grocery | null;
+  setGroceryData: (groceryData: Grocery | null) => void;
+  openCheckoutModal: boolean;
+  setOpenCheckoutModal: (open: boolean) => void;
 }
 
 const UserStore = create<StoreState>((set) => ({
@@ -15,8 +17,10 @@ const UserStore = create<StoreState>((set) => ({
   setOpenAddModal: (open: boolean) => set({ openAddModal: open }),
   barcode: "",
   setBarcode: (barcode: string) => set({ barcode }),
-  cartItems: [],
-  setCartItems: (items: GroceryItem[]) => set({ cartItems: items }),
+  groceryData: null,
+  setGroceryData: (groceryData: Grocery | null) => set({ groceryData }),
+  openCheckoutModal: false,
+  setOpenCheckoutModal: (open: boolean) => set({ openCheckoutModal: open }),
 }));
 
 export default UserStore;

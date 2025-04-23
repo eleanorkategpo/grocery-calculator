@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+
 const grocerySchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
+  _id: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
   },
   storeName: {
     type: String,
@@ -18,13 +18,22 @@ const grocerySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  updatedAt: {  
+  updatedAt: {
     type: Date,
   },
   checkoutDate: {
     type: Date,
-    default: null,
   },
+  totalAmount: {
+    type: Number,
+  },
+  paidWith: {
+    type: String,
+    enum: ['cash', 'credit', 'debit', 'gcash', 'paymaya', 'gotyme', 'atome', 'others'],
+  },
+  amountTendered: {
+    type: Number,
+  }
 });
 
 const Grocery = mongoose.model("Grocery", grocerySchema);

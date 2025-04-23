@@ -67,7 +67,7 @@ const Login = () => {
           navigate("/dashboard/new-grocery");
         })
         .catch((err) => {
-          enqueueSnackbar(err.message, {
+          enqueueSnackbar(err.response.data.message, {
             variant: "error",
           });
         });

@@ -25,7 +25,7 @@ const groceryItemSchema = new mongoose.Schema({
         required: true,
     },
     groceryId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
     },
 });

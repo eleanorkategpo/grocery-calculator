@@ -1,5 +1,5 @@
-import { Box, Typography, Grid, Paper } from '@mui/material';
-import DashboardLayout from '../components/Dashboard/DashboardLayout';
+import { Box, Typography, Grid, Paper } from "@mui/material";
+import DashboardLayout from "../components/Dashboard/DashboardLayout";
 
 const Dashboard = () => {
   return (
@@ -14,12 +14,12 @@ const Dashboard = () => {
       </Box>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Paper
             sx={{
               p: 3,
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               height: 240,
             }}
           >
@@ -31,13 +31,13 @@ const Dashboard = () => {
             </Typography>
           </Paper>
         </Grid>
-        
-        <Grid item xs={12} md={6} lg={4}>
+
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Paper
             sx={{
               p: 3,
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               height: 240,
             }}
           >
@@ -49,13 +49,13 @@ const Dashboard = () => {
             </Typography>
           </Paper>
         </Grid>
-        
-        <Grid item xs={12} md={6} lg={4}>
+
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Paper
             sx={{
               p: 3,
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               height: 240,
             }}
           >
@@ -72,4 +72,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

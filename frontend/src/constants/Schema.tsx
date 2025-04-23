@@ -25,11 +25,15 @@ export type GroceryItem = {
 
 
 export type Grocery = {
-  id: string;
+  _id?: string;
   storeName: string;
   budget: number;
   createdAt: Date;
   updatedAt: Date;
   checkoutDate: Date;
+  totalAmount: number;
+  paidWith: string;
+  amountTendered: number;
+  items: GroceryItem[];
 };
 

@@ -1,7 +1,9 @@
 import { Fab, Stack, styled } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import UserStore from "../../store/UserStore";
 import AddModal from "./AddModal";
+import CheckoutModal from "./CheckoutModal";
 
 const StyledFab = styled(Stack)(({ theme }) => ({
   position: "fixed",
@@ -25,11 +27,34 @@ const Footer = () => {
           aria-label="add"
           onClick={() => userStore.setOpenAddModal(true)}
           color="primary"
+          disabled={Boolean(userStore.groceryData?.checkoutDate)}
         >
           <AddIcon />
         </Fab>
+        <Fab
+          aria-label="checkout"
+          onClick={() => userStore.setOpenCheckoutModal(true)}
+          color="success"
+          disabled={
+            userStore.groceryData?.items?.length === 0 ||
+            Boolean(userStore.groceryData?.checkoutDate)
+          }
+          sx={{
+            bgcolor: userStore.groceryData?.checkoutDate
+              ? "success.light"
+              : "success.main",
+            "&:hover": {
+              bgcolor: userStore.groceryData?.checkoutDate
+                ? "success.light"
+                : "success.dark",
+            },
+          }}
+        >
+          <ShoppingCartCheckoutIcon />
+        </Fab>
       </StyledFab>
       <AddModal />
+      <CheckoutModal />
     </>
   );
 };

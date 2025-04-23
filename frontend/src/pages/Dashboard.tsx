@@ -9,7 +9,7 @@ const Dashboard = () => {
           Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Welcome to your grocery calculator dashboard
+          Welcome to your KuripotKart dashboard
         </Typography>
       </Box>
 

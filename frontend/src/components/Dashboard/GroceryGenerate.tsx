@@ -235,7 +235,6 @@ const GroceryGenerate = () => {
                       boxShadow: 6,
                     },
                   }}
-                  startIcon={<ShoppingCartIcon />}
                   disabled={!groceryStore || (!noBudgetLimit && !budget)}
                 >
                   Start Shopping

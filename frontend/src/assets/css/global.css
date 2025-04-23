@@ -1,26 +1,29 @@
 @import url("https://fonts.googleapis.com/css2?family=Chewy&family=Cutive&family=Lexend:wght@100..900&family=Orbitron:wght@400..900&display=swap");
 
 :root {
-  --primary-color: #4a90e2;
-  --primary-color-light: #a7c6ed;
-  --secondary-color: #f5a623;
-  --secondary-color-light: #f6a600;
-  --accent-color: #a7c6ed;
-  --paper-background-color: #fefefe;
-  --background-color: #f6a600;
-  --text-color: #d1c200;
-  --text-secondary-color: #fefefe;
-  --text-dark-color: #000;
-  --error-color: #f5007d;
-  --success-color: #7ed321;
-  --warning-color: #f8e71c;
+  --primary-color: #8bc34a; /* Medium light green */
+  --primary-color-light: #c5e1a5; /* Lighter green */
+  --secondary-color: #cddc39; /* Lime */
+  --secondary-color-light: #f0f4c3; /* Light lime */
+  --accent-color: #ffeb3b; /* Bright yellow */
+  --paper-background-color: #ffffff; /* Pure white */
+  --background-color: #f6a600; /* Bright yellow */
+  --text-color: #333333; /* Dark gray for contrast */
+  --text-secondary-color: #555555; /* Medium gray */
+  --text-dark-color: #000000; /* Black */
+  --error-color: #e53935; /* Strong red */
+  --success-color: #43a047; /* Deep green */
+  --warning-color: #fdd835; /* Golden yellow */
 
   --primary-font: "Lexend", system-ui;
   --secondary-font: "Chewy", system-ui;
+
+  --gradient-color: linear-gradient(135deg, var(--primary-color), var(--accent-color));
 }
 
 body {
   font-family: var(--primary-font);
+  background-color: var(--background-color);
   font-weight: 400;
   font-style: normal;
 }
@@ -32,7 +35,14 @@ body {
 
 .cutive-font {
   font-family: "Cutive", sans-serif !important;
-  p, span, h1, h2, h3, h4, h5, h6 {
+  p,
+  span,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: "Cutive", sans-serif !important;
   }
 }

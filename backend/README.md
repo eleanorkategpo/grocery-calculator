@@ -1,6 +1,6 @@
-# Grocery Calculator Backend
+# KuripotKart Backend
 
-This is the backend API for the Grocery Calculator application built with Node.js, Express, and MongoDB.
+This is the backend API for the KuripotKart application built with Node.js, Express, and MongoDB.
 
 ## Features
 

@@ -1,7 +1,7 @@
 {
   "name": "grocery-calculator-backend",
   "version": "1.0.0",
-  "description": "Backend for Grocery Calculator MERN application",
+  "description": "Backend for KuripotKart MERN application",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

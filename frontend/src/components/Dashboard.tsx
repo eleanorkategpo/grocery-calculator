@@ -15,6 +15,9 @@ import LoadingOverlay from "./shared/LoadingOverlay";
 import axios from "axios";
 import Swal from "sweetalert2";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import LogoutIcon from "@mui/icons-material/Logout";
+import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
+import GroceryLogo from "../assets/logo.png";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const Dashboard = () => {
@@ -24,14 +27,17 @@ const Dashboard = () => {
 
   const menuItems = [
     {
+      icon: <ShoppingCartIcon color="primary" />,
       text: "Generate New Cart",
       path: "/dashboard/new-grocery",
     },
     {
+      icon: <ShoppingBasketIcon color="primary" />,
       text: "Previous Carts",
       path: "/dashboard/previous-carts",
     },
     {
+      icon: <LogoutIcon color="primary" />,
       text: "Logout",
       onClick: () => handleLogout(),
     },
@@ -103,9 +109,8 @@ const Dashboard = () => {
             <MenuIcon />
           </IconButton>
           <Stack direction="row" alignItems="center" gap={1}>
-            <ShoppingCartIcon color="primary" />
-            <Typography variant="subtitle2" color="primary">
-              YOUR GROCERY ASSISTANT
+            <Typography variant="subtitle1" color="primary" >
+              Kuripot Smart, Grocery Cart
             </Typography>
           </Stack>
         </Toolbar>
@@ -119,7 +124,9 @@ const Dashboard = () => {
             <MenuItem
               key={item.text}
               onClick={() => item.onClick?.() ?? handleMenuItemClick(item.path)}
+              sx={{ display: "flex", alignItems: "center", gap: 1 }}
             >
+              {item.icon}
               {item.text}
             </MenuItem>
           ))}

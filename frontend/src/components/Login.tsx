@@ -1,34 +1,17 @@
-import {
-  Box,
-  Button,
-  CircularProgress,
-  createTheme,
-  Link,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-  useMediaQuery,
-} from "@mui/material";
 import React, { useEffect, useState } from "react";
-import GroceryLogo from "../assets/groceries.svg";
-import InputAdornment from "@mui/material/InputAdornment";
-import { EmailOutlined, LockOutlined } from "@mui/icons-material";
+import { Box, Button, CircularProgress, Paper, Stack, TextField, Typography, Link } from "@mui/material";
+import GroceryLogo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { enqueueSnackbar } from "notistack";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Login = () => {
-  const theme = createTheme();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-
 
   useEffect(() => {
     localStorage.removeItem("user");
@@ -42,151 +25,98 @@ const Login = () => {
     try {
       // Simple validation
       if (!email || !password) {
-        throw new Error("Please fill in all fields");
+        throw new Error("Please enter both email and password");
       }
 
       if (!email.includes("@")) {
-        throw new Error("Please enter a valid email");
+        throw new Error("Invalid email format");
       }
 
       if (password.length < 6) {
         throw new Error("Password must be at least 6 characters");
       }
 
-      axios
-        .post(`${API_URL}/auth/login`, {
-          email,
-          password,
-        })
-        .then((res: AxiosResponse) => {
-          axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
-          localStorage.setItem("user", JSON.stringify(res.data));
-          enqueueSnackbar("Login successful!", {
-            variant: "success",
-          });
-          navigate("/dashboard/new-grocery");
-        })
-        .catch((err) => {
-          enqueueSnackbar(err.response.data.message, {
-            variant: "error",
-          });
-        });
+      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
+      axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+      localStorage.setItem("user", JSON.stringify(res.data));
+      enqueueSnackbar("Login successful!", { variant: "success" });
+      navigate("/dashboard/new-grocery");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <Box
+      component="main"
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        p: 2
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100vw',
+        background: 'var(--gradient-color)',
+        p: 2,
       }}
     >
-      <Stack
-        direction="column"
-        justifyContent="center"
-        alignItems="center"
-        my={2}
-      >
-        <img src={GroceryLogo} alt="Grocery Calculator" width={100} />
-        <Typography
-          variant="h4"
-          component="h1"
-          align="center"
-          gutterBottom
-          color="text.secondary"
-        >
-          Grocery Calculator
-        </Typography>
-      </Stack>
       <Paper
-        elevation={3}
+        component="form"
+        onSubmit={handleLogin}
+        elevation={6}
         sx={{
-          p: isMobile ? 2 : 4,
-          width: "100%",
+          maxWidth: 400,
+          minWidth: 300,
+          width: '100%',
+          px: { xs: 2, md: 4 },
+          py: { xs: 3, md: 4 },
           borderRadius: 2,
+          bgcolor: 'var(--paper-background-color)',
         }}
       >
-        <Typography variant="h6" component="h1" align="center" gutterBottom>
-          LOGIN
-        </Typography>
-
-        {error && (
-          <Typography color="error" align="center" sx={{ mb: 2 }}>
-            {error}
-          </Typography>
-        )}
-
-        <Box component="form" onSubmit={handleLogin} noValidate>
+        <Stack spacing={3} alignItems="center">
+          <Box component="img" src={GroceryLogo} alt="KuripotKart" sx={{ width: 160, height: 150 }} />
+          <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: "Cutive" }}>Kuripot Smart, Grocery Cart</Typography>
+          {error && (
+            <Typography color="error" variant="body2" align="center">
+              {error}
+            </Typography>
+          )}
           <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
             label="Email Address"
-            name="email"
-            autoComplete="off"
-            autoFocus
+            fullWidth
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailOutlined color="primary" />
-                </InputAdornment>
-              ),
-            }}
           />
           <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
             label="Password"
             type="password"
-            id="password"
-            autoComplete="off"
+            fullWidth
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlined color="primary" />
-                </InputAdornment>
-              ),
-            }}
           />
           <Button
             type="submit"
-            fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            fullWidth
+            size="large"
             disabled={loading}
+            startIcon={loading && <CircularProgress size={20} color="inherit" />}
           >
-            {loading ? <CircularProgress size={24} /> : "Sign In"}
+            {loading ? 'Signing In' : 'Sign In'}
           </Button>
-
-          <Box sx={{ textAlign: "center", mt: 1 }}>
-            <Typography variant="body2">
-              Don't have an account?{" "}
-              <Link
-                onClick={() => navigate("/register")}
-                variant="body2"
-                color="primary"
-              >
-                Sign Up
-              </Link>
-            </Typography>
-          </Box>
-        </Box>
+          <Typography variant="body2">
+            Don't have an account?{' '}
+            <Link onClick={() => navigate('/register')} sx={{ cursor: 'pointer' }}>
+              Sign Up
+            </Link>
+          </Typography>
+        </Stack>
       </Paper>
     </Box>
   );

@@ -222,6 +222,7 @@ const AddModal = () => {
                     onValueChange={(value) => {
                       setFieldValue("price", value);
                     }}
+                    className="number-font"
                     onBlur={handleBlur}
                     value={values.price}
                     prefix="₱ "
@@ -234,7 +235,7 @@ const AddModal = () => {
                       boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
                       fontSize: 20,
                       fontWeight: 600,
-                      color: "var(--text-color)",
+                      color: "var(--neon-green)",
                       padding: "0 10px",
                       background: "black",
                     }}

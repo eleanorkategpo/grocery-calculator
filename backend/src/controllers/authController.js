@@ -1,7 +1,6 @@
 import User from '../models/userModel.js';
 import AppError from '../utils/appError.js';
 import { sendTokenResponse, verifyToken } from '../utils/jwtUtils.js';
-import { promisify } from 'util';
 
 // Register a new user
 export const signup = async (req, res, next) => {
@@ -55,9 +54,10 @@ export const login = async (req, res, next) => {
 
 // Logout user
 export const logout = (req, res) => {
-  res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
+  // Clear the JWT cookie
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production'
   });
   
   res.status(200).json({ status: 'success' });
@@ -80,7 +80,7 @@ export const protect = async (req, res, next) => {
     }
 
     // Verify token and get user
-    const decoded = await promisify(verifyToken)(token);
+    const decoded = verifyToken(token);
     const currentUser = await User.findById(decoded.id);
 
     if (!currentUser) {

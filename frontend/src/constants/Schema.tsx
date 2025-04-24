@@ -12,6 +12,7 @@ export type UserSchema = {
 };
 
 export type GroceryItem = {
+  _id: string;
   barcode: string;
   description: string;
   price: number;

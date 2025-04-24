@@ -9,6 +9,7 @@ import morgan from "morgan";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import groceryRoutes from "./routes/groceryRoutes.js";
+import shoppingListRoutes from "./routes/shoppingListRoutes.js";
 
 // Load environment variables
 dotenv.config({ path: "./.env" });
@@ -17,12 +18,11 @@ dotenv.config({ path: "./.env" });
 const app = express();
 const PORT = process.env.PORT || 5000;
 // Middleware
+// Allow CORS from the React front-end when sending credentials
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 app.use(
   cors({
-    origin: "*",
-    // origin: "http://localhost:5173",
-    // origin: "http://192.168.1.44:3000",
-    // origin: "http://172.28.64.1:3000",
+    origin: CLIENT_URL,
     credentials: true,
   })
 );
@@ -34,6 +34,7 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/grocery", groceryRoutes);
+app.use("/api/shopping-list", shoppingListRoutes);
 
 // Health check route
 app.get("/api/healthcheck", (req, res) => {

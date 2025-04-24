@@ -18,6 +18,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import GroceryLogo from "../assets/logo.png";
+import { ShoppingBag } from "@mui/icons-material";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const Dashboard = () => {
@@ -35,6 +36,11 @@ const Dashboard = () => {
       icon: <ShoppingBasketIcon color="primary" />,
       text: "Previous Carts",
       path: "/dashboard/previous-carts",
+    },
+    {
+      icon: <ShoppingBag color="primary" />,
+      text: "Shopping List",
+      path: "/dashboard/shopping-list",
     },
     {
       icon: <LogoutIcon color="primary" />,
@@ -141,6 +147,7 @@ const Dashboard = () => {
           alignItems: "center",
           width: "100%",
           height: "100%",
+          background: 'var(--gradient-color)'
         }}
       >
         <Outlet />

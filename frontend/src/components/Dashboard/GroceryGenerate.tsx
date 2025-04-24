@@ -18,9 +18,8 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
-const API_URL = import.meta.env.VITE_API_URL;
 import { useNavigate } from "react-router-dom";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const GroceryGenerate = () => {
   const navigate = useNavigate();
@@ -62,7 +61,6 @@ const GroceryGenerate = () => {
         grocery
       )
       .then((response) => {
-        debugger
         const id = response.data.data.grocery._id;
         navigate(`/dashboard/${id}/cart`);
       })
@@ -137,7 +135,7 @@ const GroceryGenerate = () => {
             <Grow in={fadeIn} timeout={1200}>
               <Stack direction="row" alignItems="center" spacing={2}>
                 <CalendarTodayIcon color="primary" />
-                <Typography variant="body1" color="primary">
+                <Typography variant="body1">
                   {currentDateTime}
                 </Typography>
               </Stack>
@@ -167,6 +165,7 @@ const GroceryGenerate = () => {
                   direction="row"
                   justifyContent="space-between"
                   alignItems="center"
+                  gap={2}
                 >
                   <Typography variant="body1" fontWeight="medium">
                     Set Your Budget

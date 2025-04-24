@@ -7,6 +7,7 @@ import ErrorPage from "../components/shared/ErrorPage";
 import MyCart from "../components/Dashboard/MyCart";
 import GroceryGenerate from "../components/Dashboard/GroceryGenerate";
 import PreviousCarts from "../components/Dashboard/PreviousCarts";
+import ShoppingList from "../components/Dashboard/ShoppingLIst";
 
 // Mock authentication function
 const isAuthenticated = () => {
@@ -30,6 +31,7 @@ export const routes = createRoutesFromElements(
       <Route path=":groceryId/cart" element={<MyCart />} />
       <Route path="new-grocery" element={<GroceryGenerate />} />
       <Route path="previous-carts" element={<PreviousCarts />} />
+      <Route path="shopping-list" element={<ShoppingList />} />
     </Route>
     <Route path="*" element={<ErrorPage />} />
   </Route>

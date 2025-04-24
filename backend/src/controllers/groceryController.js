@@ -16,6 +16,7 @@ export const createGroceryItem = async (req, res, next) => {
     const body = {
       ...req.body,
       groceryId: new mongoose.Types.ObjectId(req.body.groceryId),
+      user: req.user._id,
     };
     const groceryItem = await GroceryItem.create(body);
     res.status(201).json({ status: "success", data: { groceryItem } });
@@ -107,7 +108,11 @@ export const getGroceryById = async (req, res, next) => {
 
 export const createGrocery = async (req, res, next) => {
   try {
-    const grocery = await Grocery.create(req.body);
+    const body = {
+      ...req.body,
+      user: req.user._id,
+    };
+    const grocery = await Grocery.create(body);
     res.status(201).json({ status: "success", data: { grocery } });
   } catch (error) {
     next(error);
@@ -129,6 +134,19 @@ export const deleteGrocery = async (req, res, next) => {
   try {
     await Grocery.findByIdAndDelete(req.params.id);
     res.status(204).json({ status: "success" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLastGroceryItems = async (req, res, next) => {
+  try {
+    const lastGroceryItems = await GroceryItem.find({
+      user: req.user._id,
+    })
+      .sort({ createdAt: -1 })
+      .limit(10);
+    res.status(200).json({ status: "success", data: { lastGroceryItems } });
   } catch (error) {
     next(error);
   }

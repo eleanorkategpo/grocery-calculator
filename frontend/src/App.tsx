@@ -13,6 +13,10 @@ function App() {
   const createdTheme = createTheme(theme);
   const router = createBrowserRouter(routes);
 
+
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+axios.defaults.withCredentials = true;  
+
   axios.interceptors.request.use((config) => {
     if (!config.headers.Authorization) {
       const user = JSON.parse(localStorage.getItem("user") || "{}");

@@ -12,7 +12,6 @@ const StyledFab = styled(Stack)(({ theme }) => ({
   right: theme.spacing(2),
   height: "auto",
   margin: "0 auto",
-  backgroundColor: theme.palette.secondary.main,
   display: "flex",
   flexDirection: "column",
   gap: 10,
@@ -34,21 +33,12 @@ const Footer = () => {
         <Fab
           aria-label="checkout"
           onClick={() => userStore.setOpenCheckoutModal(true)}
-          color="success"
+          color="primary"
           disabled={
             userStore.groceryData?.items?.length === 0 ||
             Boolean(userStore.groceryData?.checkoutDate)
           }
-          sx={{
-            bgcolor: userStore.groceryData?.checkoutDate
-              ? "success.light"
-              : "success.main",
-            "&:hover": {
-              bgcolor: userStore.groceryData?.checkoutDate
-                ? "success.light"
-                : "success.dark",
-            },
-          }}
+         
         >
           <ShoppingCartCheckoutIcon />
         </Fab>

@@ -10,16 +10,18 @@ import {
   updateGrocery,
   deleteGrocery,
   getPreviousCarts,
+  getLastGroceryItems,
 } from "../controllers/groceryController.js";
 
 const router = express.Router();
 
-// router.use(protect);
+router.use(protect);
 router.get("/previous-carts", getPreviousCarts);
 router.post("/new-item", createGroceryItem);
 router.get("/:id/items", getGroceryItemsById);
 router.patch("/item/:itemId", updateGroceryItem);
 router.delete("/item/:itemId", deleteGroceryItem);
+router.get("/last-grocery-items", getLastGroceryItems);
 
 router.post("/new-grocery", createGrocery);
 router.get("/:id", getGroceryById);

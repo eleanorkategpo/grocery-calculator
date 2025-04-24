@@ -33,7 +33,12 @@ const grocerySchema = new mongoose.Schema({
   },
   amountTendered: {
     type: Number,
-  }
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
 });
 
 const Grocery = mongoose.model("Grocery", grocerySchema);

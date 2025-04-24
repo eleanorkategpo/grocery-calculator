@@ -57,7 +57,6 @@ const CheckoutModal = () => {
     0;
 
   const handleClose = () => {
-    userStore.setGroceryData(null);
     userStore.setOpenCheckoutModal(false);
   };
 
@@ -127,9 +126,7 @@ const CheckoutModal = () => {
         <Box sx={{ overflow: "auto", paddingTop: "40px", width: "100%" }}>
           <Stack direction="column" spacing={3} width="100%">
             <Box>
-              <Typography variant="body2" >
-                Total Amount
-              </Typography>
+              <InputLabel>Total Amount</InputLabel>
               <Typography variant="h4" fontWeight="bold" color="primary">
                 {new Intl.NumberFormat("en-US", {
                   style: "currency",
@@ -138,20 +135,22 @@ const CheckoutModal = () => {
               </Typography>
             </Box>
 
-            <InputLabel id="payment-method-label">Payment Method</InputLabel>
-            <FormControl fullWidth>
-              <Select
-                variant="outlined"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
-                <MenuItem value="cash">Cash</MenuItem>
-                <MenuItem value="credit">Credit Card</MenuItem>
-                <MenuItem value="debit">Debit Card</MenuItem>
-                <MenuItem value="gcash">GCash</MenuItem>
-                <MenuItem value="paymaya">PayMaya</MenuItem>
-              </Select>
-            </FormControl>
+            <Box>
+              <InputLabel id="payment-method-label">Payment Method</InputLabel>
+              <FormControl fullWidth>
+                <Select
+                  variant="outlined"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <MenuItem value="cash">Cash</MenuItem>
+                  <MenuItem value="credit">Credit Card</MenuItem>
+                  <MenuItem value="debit">Debit Card</MenuItem>
+                  <MenuItem value="gcash">GCash</MenuItem>
+                  <MenuItem value="paymaya">PayMaya</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
 
             {paymentMethod === "cash" && (
               <>

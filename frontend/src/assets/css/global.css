@@ -6,8 +6,11 @@
   --secondary-color: #cddc39; /* Lime */
   --secondary-color-light: #f0f4c3; /* Light lime */
   --accent-color: #ffeb3b; /* Bright yellow */
+  --accent-color-2: 	#ffce00;
+  --accent-color-3: #00d2ff;
+  --neon-green: #39FF14;
   --paper-background-color: #ffffff; /* Pure white */
-  --background-color: #f6a600; /* Bright yellow */
+  --background-color: #8bc34a; /* Bright yellow */
   --text-color: #333333; /* Dark gray for contrast */
   --text-secondary-color: #555555; /* Medium gray */
   --text-dark-color: #000000; /* Black */

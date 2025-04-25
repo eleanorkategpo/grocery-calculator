@@ -19,10 +19,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 // Middleware
 // Allow CORS from the React front-end when sending credentials
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const CLIENT_URL =
+  process.env.CLIENT_URL ||
+  "http://localhost:5173" ;
 app.use(
   cors({
     origin: CLIENT_URL,
+    
     credentials: true,
   })
 );

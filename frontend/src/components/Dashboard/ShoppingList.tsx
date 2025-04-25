@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Typography,
   Paper,
@@ -8,19 +8,28 @@ import {
   IconButton,
   Badge,
   CircularProgress,
-  Chip,
   Avatar,
+  Button,
+  Grid,
 } from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 import { useSwipeable } from "react-swipeable";
 import axios from "axios";
 import Swal from "sweetalert2";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import DeleteIcon from "@mui/icons-material/Delete";
+import RemoveShoppingCartIcon from "@mui/icons-material/RemoveShoppingCart";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { GroceryItem } from "../../constants/Schema";
+import CloseIcon from "@mui/icons-material/Close";
+import { DoNotTouch } from "@mui/icons-material";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -59,7 +68,9 @@ const ShoppingListItemCard = ({
         onClick={() => onClick(item)}
       >
         <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar sx={{ bgcolor: "primary.main", color: "white" }}>{item.quantity}</Avatar>
+          <Avatar sx={{ bgcolor: "primary.main", color: "white" }}>
+            {item.quantity}
+          </Avatar>
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body1" fontWeight="medium" noWrap>
               {item.description}
@@ -103,6 +114,8 @@ const suggestionMessages: string[] = [
   "Need to replenish stock?",
   "Don't forget to refill?",
   "Looks like you need to restock...",
+  "Time to restock your pantry!",
+  "Is it time to restock?",
 ];
 
 const ShoppingList = () => {
@@ -125,7 +138,22 @@ const ShoppingList = () => {
   );
   const [showItemDetails, setShowItemDetails] = useState(false);
 
-  // Fetch previous grocery items and shopping list on component mount
+  // Add state for swipe direction animation
+  const [swipeDirection, setSwipeDirection] = useState<
+    "none" | "left" | "right"
+  >("none");
+  const [isHolding, setIsHolding] = useState(false);
+  const xPosition = useMotionValue(0);
+  const deleteIconOpacity = useTransform(xPosition, [-150, -50], [1, 0]);
+  const cartIconOpacity = useTransform(xPosition, [50, 150], [0, 1]);
+  const cardRotation = useTransform(xPosition, [-200, 0, 200], [-10, 0, 10]);
+  const cardScale = useTransform(
+    xPosition,
+    [-200, -100, 0, 100, 200],
+    [0.8, 0.9, 1, 0.9, 0.8]
+  );
+
+  // Fetch 56 items and shopping list on component mount
   useEffect(() => {
     fetchPreviousItems();
     fetchShoppingList();
@@ -245,7 +273,6 @@ const ShoppingList = () => {
       setCurrentItem(previousItems[currentIndex + 1]);
     } else {
       setCurrentItem(null);
-      
     }
   };
 
@@ -253,17 +280,32 @@ const ShoppingList = () => {
   const suggestionSwipeHandlers = useSwipeable({
     onSwipedLeft: () => {
       if (currentItem) {
+        setSwipeDirection("left");
         // Animation will happen via framer-motion
-        setTimeout(() => showNextItem(), 300);
+        setTimeout(() => {
+          showNextItem();
+          setSwipeDirection("none");
+        }, 300);
       }
     },
     onSwipedRight: () => {
       if (currentItem) {
+        setSwipeDirection("right");
         // Animation will happen via framer-motion
         setTimeout(() => {
           addToShoppingList(currentItem);
+          setSwipeDirection("none");
         }, 300);
       }
+    },
+    onSwiping: (e) => {
+      xPosition.set(e.deltaX);
+      if (Math.abs(e.deltaX) > 20) {
+        setIsHolding(true);
+      }
+    },
+    onSwiped: () => {
+      setIsHolding(false);
     },
     trackMouse: true,
   });
@@ -293,16 +335,7 @@ const ShoppingList = () => {
 
     if (!currentItem) {
       return (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            p: 3,
-          }}
-        >
+        <Box>
           <Typography variant="h6" gutterBottom>
             No more items to suggest
           </Typography>
@@ -318,9 +351,72 @@ const ShoppingList = () => {
         <motion.div
           key={currentItem._id}
           initial={{ x: 0, opacity: 1 }}
-          exit={{ x: 300, opacity: 0 }}
+          animate={{
+            x:
+              swipeDirection === "left"
+                ? -300
+                : swipeDirection === "right"
+                ? 300
+                : 0,
+            opacity: swipeDirection === "none" ? 1 : 0,
+            y: swipeDirection === "right" ? -100 : 0,
+            scale: swipeDirection === "right" ? 0.5 : 1,
+          }}
+          exit={{ x: swipeDirection === "left" ? -300 : 300, opacity: 0 }}
+          style={{
+            x: xPosition,
+            rotate: cardRotation,
+            scale: cardScale,
+            position: "relative",
+          }}
           {...suggestionSwipeHandlers}
         >
+          {isHolding && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {/* Delete icon (appears when swiping left) */}
+              <Box
+                component={motion.div}
+                style={{
+                  opacity: deleteIconOpacity,
+                  
+                }}
+              >
+                <DoNotTouch
+                  sx={{
+                    fontSize: 100,
+                    color: "var(--error-color)",
+                  }}
+                />
+              </Box>
+
+              {/* Cart icon (appears when swiping right) */}
+              <Box
+                component={motion.div}
+                style={{
+                  opacity: cartIconOpacity,
+                }}
+              >
+                <ShoppingCartIcon
+                  sx={{
+                    fontSize: 100,
+                    color: "var(--primary-color)",
+                  }}
+                />
+              </Box>
+            </Box>
+          )}
+
           <Paper
             elevation={3}
             sx={{
@@ -332,6 +428,14 @@ const ShoppingList = () => {
               position: "relative",
               overflow: "hidden",
               borderRadius: 2,
+              transition: "all 0.3s",
+              backgroundColor: isHolding
+                ? xPosition.get() < -20
+                  ? "rgba(255, 200, 200, 0.2)"
+                  : xPosition.get() > 20
+                  ? "rgba(200, 255, 200, 0.2)"
+                  : "white"
+                : "white",
               "&:after": {
                 content: '""',
                 position: "absolute",
@@ -350,23 +454,6 @@ const ShoppingList = () => {
               <Typography variant="h5" fontWeight="bold">
                 {currentItem.description}
               </Typography>
-
-              {/* <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Chip
-                  icon={<RemoveShoppingCartIcon />}
-                  label="Swipe Left to Skip"
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                />
-                <Chip
-                  icon={<AddShoppingCartIcon />}
-                  label="Swipe Right to Add"
-                  variant="outlined"
-                  color="success"
-                  size="small"
-                />
-              </Box> */}
             </Stack>
           </Paper>
         </motion.div>
@@ -398,9 +485,16 @@ const ShoppingList = () => {
             updateQuantity={updateQuantity}
           />
         ))}
-        <Divider sx={{mt: 2, bgcolor: "var(--primary-color)"}}/>
-        <Typography variant="subtitle2" color="text.secondary" className="number-font">
-          Total: ₱{shoppingList.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
+        <Divider sx={{ mt: 2, bgcolor: "var(--primary-color)" }} />
+        <Typography
+          variant="subtitle2"
+          color="text.secondary"
+          className="number-font"
+        >
+          Total: ₱
+          {shoppingList
+            .reduce((acc, item) => acc + item.price * item.quantity, 0)
+            .toFixed(2)}
         </Typography>
       </Stack>
     );
@@ -433,20 +527,28 @@ const ShoppingList = () => {
         >
           <Paper
             sx={{
-              width: "90%",
+              width: "90vw",
               maxWidth: 400,
               p: 3,
               mx: "auto",
               borderRadius: 2,
+              position: "relative",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <Stack spacing={3}>
+              <Button
+                onClick={() => setShowItemDetails(false)}
+                sx={{ position: "absolute", top: 20, right: 0 }}
+              >
+                <CloseIcon />
+              </Button>
+
               <Typography variant="h5" fontWeight="bold">
                 {selectedItem.description}
               </Typography>
 
-              <Divider />
+              <Divider sx={{ bgcolor: "var(--primary-color)" }} />
 
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="body1">Price:</Typography>
@@ -479,7 +581,7 @@ const ShoppingList = () => {
               </Box>
 
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body1">Total:</Typography>
+                <Typography variant="body1">Estimated Total:</Typography>
                 <Typography
                   variant="body1"
                   fontWeight="bold"
@@ -489,42 +591,42 @@ const ShoppingList = () => {
                 </Typography>
               </Box>
 
-              <Divider />
+              <Divider sx={{ bgcolor: "var(--primary-color)" }} />
 
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <IconButton
-                  color="error"
-                  onClick={() => {
-                    setShowItemDetails(false);
-                    // Show confirmation before deleting
-                    Swal.fire({
-                      title: "Remove item?",
-                      text: `Remove ${selectedItem.description} from your shopping list?`,
-                      icon: "warning",
-                      showCancelButton: true,
-                      confirmButtonColor: "var(--error-color)",
-                      cancelButtonColor: "var(--secondary-color)",
-                      confirmButtonText: "Yes, remove it!",
-                    }).then(async (result) => {
-                      if (result.isConfirmed) {
-                        await axios.delete(
-                          `${API_URL}/shopping-list/remove/${selectedItem._id}`
-                        );
-                        setShoppingList(
-                          shoppingList.filter(
-                            (item) => item._id !== selectedItem._id
-                          )
-                        );
-                      }
-                    });
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-                <IconButton onClick={() => setShowItemDetails(false)}>
-                  Close
-                </IconButton>
-              </Box>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setShowItemDetails(false);
+                  // Show confirmation before deleting
+                  Swal.fire({
+                    title: "Remove item?",
+                    text: `Remove ${selectedItem.description} from your shopping list?`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "var(--error-color)",
+                    cancelButtonColor: "var(--secondary-color)",
+                    confirmButtonText: "Yes, remove it!",
+                  }).then(async (result) => {
+                    if (result.isConfirmed) {
+                      await axios.delete(
+                        `${API_URL}/shopping-list/remove/${selectedItem._id}`
+                      );
+                      setShoppingList(
+                        shoppingList.filter(
+                          (item) => item._id !== selectedItem._id
+                        )
+                      );
+                    }
+                  });
+                }}
+                sx={{
+                  bgcolor: "var(--error-color)",
+                  color: "white",
+                }}
+              >
+                <RemoveShoppingCartIcon />
+                Remove from List
+              </Button>
             </Stack>
           </Paper>
         </motion.div>
@@ -537,43 +639,61 @@ const ShoppingList = () => {
     <Stack
       direction={{ xs: "column", md: "row" }}
       spacing={2}
-      sx={{ height: "100%", p: 2 }}
+      sx={{ width: "100%", height: "100%", p: 2 }}
+      overflow="auto"
     >
-      <Box sx={{ flex: { xs: "1", md: "1 1 60%" }, p: 1 }}>
-        <Typography
-          variant="h6"
-          sx={{ mb: 3, display: "flex", alignItems: "center" }}
+      <Grid container sx={{ width: "100%", height: "100%" }}>
+        <Grid
+          size={{ xs: 12, md: 6 }}
+          sx={{
+            maxHeight: { xs: "40%", md: "100%" },
+            p: 1,
+            overflow: "hidden",
+          }}
         >
-          <AddShoppingCartIcon sx={{ mr: 1 }} />
-          Previous Grocery Items
-        </Typography>
-
-        {renderSuggestionCard()}
-        <Typography variant="body2" color="text.secondary" sx={{fontSize: 10}}>
-          Swipe left to skip, right to add to your shopping list
-        </Typography>
-      </Box>
-      
-
-      <Box sx={{ flex: { xs: "1", md: "1 1 40%" }, p: 1 }}>
-        <Paper sx={{ p: 3,  borderRadius: 2 }}>
           <Typography
             variant="h6"
             sx={{ mb: 3, display: "flex", alignItems: "center" }}
           >
-            <Badge
-              badgeContent={shoppingList.length}
-              color="primary"
-              sx={{ ml: 1 }}
-            >
-              <ShoppingCartIcon sx={{ mr: 1 }} />
-            </Badge>
-            My Shopping List
+            <AddShoppingCartIcon sx={{ mr: 1 }} />
+            Previous Grocery Items
           </Typography>
 
-          {renderShoppingList()}
-        </Paper>
-      </Box>
+          {renderSuggestionCard()}
+          {currentItem && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontSize: 10 }}
+            >
+              Swipe left to skip, right to add to your shopping list
+            </Typography>
+          )}
+        </Grid>
+
+        <Grid
+          size={{ xs: 12, md: 6 }}
+          sx={{ height: { xs: "60%", md: "100%" }, p: 1 }}
+        >
+          <Paper sx={{ p: 3, borderRadius: 2 }}>
+            <Typography
+              variant="h6"
+              sx={{ mb: 3, display: "flex", alignItems: "center" }}
+            >
+              <Badge
+                badgeContent={shoppingList.length}
+                color="primary"
+                sx={{ ml: 1 }}
+              >
+                <ShoppingCartIcon sx={{ mr: 1 }} />
+              </Badge>
+              My Shopping List
+            </Typography>
+
+            {renderShoppingList()}
+          </Paper>
+        </Grid>
+      </Grid>
 
       {renderItemDetailsModal()}
     </Stack>

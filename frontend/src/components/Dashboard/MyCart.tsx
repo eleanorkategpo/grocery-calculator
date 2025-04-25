@@ -6,6 +6,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Grocery } from "../../constants/Schema";
 import Footer from "./Footer";
+import EditCart from "./EditCart";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -47,9 +48,12 @@ const MyCart = () => {
         sx={{ padding: 2, borderRadius: 2, mt: 1, textAlign: "left" }}
         className="cutive-font"
       >
-        <Typography variant="body1" color="black" my={1}>
-          Items
-        </Typography>
+        <Stack direction="row" justifyContent="space-between">
+          <Typography variant="body1" color="black" my={1}>
+            Items
+          </Typography>
+          <EditCart />
+        </Stack>
 
         <Typography variant="subtitle2" color="black">
           {userStore.groceryData?.storeName}
@@ -164,7 +168,7 @@ const GrandTotal = ({ groceryData }: { groceryData: Grocery | null }) => {
     userStore.groceryData?.items?.reduce((acc, item) => acc + item.total, 0) ??
     0;
   const [isOverBudget, setIsOverBudget] = useState(false);
-  
+
   useEffect(() => {
     if (grandTotal > (groceryData?.budget ?? 0)) {
       setIsOverBudget(true);
@@ -179,11 +183,11 @@ const GrandTotal = ({ groceryData }: { groceryData: Grocery | null }) => {
         <Typography variant="body1" color="white" textAlign="left">
           Your Budget:
         </Typography>
-      <Typography variant="body1" color="white" textAlign="left">
-        {new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "PHP",
-        }).format(groceryData?.budget ?? 0)}
+        <Typography variant="body1" color="white" textAlign="left">
+          {new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "PHP",
+          }).format(groceryData?.budget ?? 0)}
         </Typography>
       </Stack>
       <Box

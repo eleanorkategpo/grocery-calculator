@@ -158,6 +158,7 @@ const CheckoutModal = () => {
                     onValueChange={(value) => setAmountTendered(value || "")}
                     prefix="₱ "
                     placeholder="0.00"
+                    className="number-font"
                     style={{
                       width: "100%",
                       height: 56,
@@ -166,6 +167,8 @@ const CheckoutModal = () => {
                       fontSize: 18,
                       padding: "0 14px",
                       marginTop: 8,
+                      color: "var(--neon-green)",
+                      backgroundColor: "black",
                     }}
                   />
                 </Box>

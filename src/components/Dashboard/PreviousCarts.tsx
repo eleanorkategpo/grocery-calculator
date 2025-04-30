@@ -159,7 +159,7 @@ const PreviousCarts = () => {
             sx={{ maxWidth: "500px", margin: "0 auto" }}
           >
             {previousCarts.length === 0 ? (
-              <Typography variant="h6" color="white">
+              <Typography variant="h6" color="white" sx={{textAlign: "center", width: "100%"}}>
                 No previous carts found
               </Typography>
             ) : (

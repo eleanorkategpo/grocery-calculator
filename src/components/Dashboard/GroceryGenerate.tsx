@@ -198,6 +198,7 @@ const GroceryGenerate = () => {
                     prefix="₱ "
                     placeholder="₱ 0.00"
                     disabled={noBudgetLimit}
+                    className="number-font"
                     style={{
                       width: "100%",
                       height: 56,
@@ -206,7 +207,8 @@ const GroceryGenerate = () => {
                       fontSize: 18,
                       padding: "0 14px",
                       transition: "all 0.3s ease",
-                      color: "var(--text-color)",
+                      color: "var(--neon-green)",
+                      backgroundColor: "black",
                       textAlign: "center",
                     }}
                   />

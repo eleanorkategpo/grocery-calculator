@@ -42,6 +42,7 @@ const Login = () => {
       enqueueSnackbar("Login successful!", { variant: "success" });
       navigate("/dashboard/new-grocery");
     } catch (err) {
+      debugger
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
       setLoading(false);
@@ -78,6 +79,7 @@ const Login = () => {
           py: { xs: 3, md: 4 },
           borderRadius: 2,
           bgcolor: 'var(--paper-background-color)',
+      
         }}
       >
         <Stack spacing={3} alignItems="center">

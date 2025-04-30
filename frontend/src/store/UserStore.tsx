@@ -12,6 +12,8 @@ interface StoreState {
   setOpenCheckoutModal: (open: boolean) => void;
   openEditCartModal: boolean;
   setOpenEditCartModal: (open: boolean) => void;
+  editItem: GroceryItem | null;
+  setEditItem: (item: GroceryItem | null) => void;
 }
 
 const UserStore = create<StoreState>((set) => ({
@@ -25,6 +27,8 @@ const UserStore = create<StoreState>((set) => ({
   setOpenCheckoutModal: (open: boolean) => set({ openCheckoutModal: open }),
   openEditCartModal: false,
   setOpenEditCartModal: (open: boolean) => set({ openEditCartModal: open }),
+  editItem: null,
+  setEditItem: (item: GroceryItem | null) => set({ editItem: item }),
 }));
 
 export default UserStore;

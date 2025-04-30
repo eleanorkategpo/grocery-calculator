@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Typography,
   Paper,
@@ -26,7 +26,6 @@ import RemoveShoppingCartIcon from "@mui/icons-material/RemoveShoppingCart";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { GroceryItem } from "../../constants/Schema";
 import CloseIcon from "@mui/icons-material/Close";
 import { DoNotTouch } from "@mui/icons-material";

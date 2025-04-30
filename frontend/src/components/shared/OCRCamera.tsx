@@ -10,11 +10,9 @@ import {
   Alert,
   IconButton
 } from "@mui/material";
-import UserStore from "../../store/UserStore";
 import { CameraAlt, FileUpload } from "@mui/icons-material";
 
 const OCRCamera = () => {
-  const userStore = UserStore();
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [ocrResult, setOcrResult] = useState("");

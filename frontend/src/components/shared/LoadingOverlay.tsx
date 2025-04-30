@@ -1,4 +1,3 @@
-import React from "react";
 import LoadingGif from "../../assets/checkout-loading.gif";
 import { Box } from "@mui/material";
 const LoadingOverlay = ({ loading }: { loading: boolean }) => {

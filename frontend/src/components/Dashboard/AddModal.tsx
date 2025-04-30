@@ -21,14 +21,13 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CloseIcon from "@mui/icons-material/Close";
 import CurrencyInput from "react-currency-input-field";
-import OCRCamera from "../shared/OCRCamera";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import axios from "axios";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import EditIcon from "@mui/icons-material/Edit";
 import { enqueueSnackbar } from "notistack";
 import { useParams } from "react-router-dom";
-import { Grocery } from "../../constants/Schema";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BoxStyled = styled(Box)(() => ({
@@ -54,6 +53,8 @@ const AddModal = () => {
   const priceInputRef = useRef<HTMLInputElement>(null);
   const { groceryId } = useParams();
   const [loading, setLoading] = useState(false);
+  const isEditMode = Boolean(userStore.editItem);
+  
   // Validation schema using Yup
   const validationSchema = Yup.object().shape({
     barcode: Yup.string().required("Barcode is required"),
@@ -70,6 +71,7 @@ const AddModal = () => {
 
   const handleClose = () => {
     userStore.setOpenAddModal(false);
+    userStore.setEditItem(null);
   };
 
   const randomizeBarcode = (
@@ -90,34 +92,79 @@ const AddModal = () => {
       total: Number(values.price) * Number(values.quantity),
     };
     setLoading(true);
-    axios
-      .post(`${API_URL}/grocery/new-item`, body)
-      .then((res) => {
-        if (res.status === 201) {
-          enqueueSnackbar("Item added successfully", {
-            variant: "success",
-          });
-          handleClose();
-          if (userStore.groceryData) {
-            userStore.setGroceryData({
-              ...userStore.groceryData,
-              items: [
-                ...userStore.groceryData.items,
-                res.data.data.groceryItem,
-              ],
+    
+    if (isEditMode) {
+      // Update existing item
+      axios
+        .patch(`${API_URL}/grocery/item/${userStore.editItem?._id}`, body)
+        .then((res) => {
+          console.log("Update response:", res.data);
+          if (res.status === 200) {
+            enqueueSnackbar("Item updated successfully", {
+              variant: "success",
             });
+            
+            if (userStore.groceryData) {
+              // Create a new array with the updated item
+              const updatedItems = userStore.groceryData.items.map(item => {
+                if (item._id === userStore.editItem?._id) {
+                  console.log("Replacing item:", item, "with:", res.data.data.groceryItem);
+                  return res.data.data.groceryItem;
+                }
+                return item;
+              });
+              
+              // Update grocery data with new items array
+              userStore.setGroceryData({
+                ...userStore.groceryData,
+                items: updatedItems,
+              });
+            }
+            
+            // Close modal after state is updated
+            handleClose();
           }
-        }
-      })
-      .catch((err) => {
-        enqueueSnackbar(err.response.data.message, {
-          variant: "error",
+        })
+        .catch((err) => {
+          enqueueSnackbar(err.response?.data?.message || "Failed to update item", {
+            variant: "error",
+          });
+        })
+        .finally(() => {
+          setLoading(false);
         });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    } else {
+      // Create new item
+      axios
+        .post(`${API_URL}/grocery/new-item`, body)
+        .then((res) => {
+          if (res.status === 201) {
+            enqueueSnackbar("Item added successfully", {
+              variant: "success",
+            });
+            handleClose();
+            if (userStore.groceryData) {
+              userStore.setGroceryData({
+                ...userStore.groceryData,
+                items: [
+                  ...userStore.groceryData.items,
+                  res.data.data.groceryItem,
+                ],
+              });
+            }
+          }
+        })
+        .catch((err) => {
+          enqueueSnackbar(err.response?.data?.message || "Failed to add item", {
+            variant: "error",
+          });
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
   };
+  
   return (
     <Modal open={userStore.openAddModal} onClose={handleClose}>
       <BoxStyled>
@@ -134,7 +181,7 @@ const AddModal = () => {
             height: 50,
           }}
         >
-          <Typography variant="h6">Add Item</Typography>
+          <Typography variant="h6">{isEditMode ? 'Edit Item' : 'Add Item'}</Typography>
           <IconButton onClick={handleClose}>
             <CloseIcon color="secondary" />
           </IconButton>
@@ -144,7 +191,14 @@ const AddModal = () => {
           <OCRCamera /> */}
 
           <Formik
-            initialValues={{
+            initialValues={isEditMode ? {
+              barcode: userStore.editItem?.barcode || '',
+              description: userStore.editItem?.description || '',
+              price: userStore.editItem?.price.toString() || '0.00',
+              quantity: userStore.editItem?.quantity || 1,
+              unit: userStore.editItem?.unit || 'pc',
+              total: userStore.editItem?.total.toString() || '0.00',
+            } : {
               barcode: randomizeBarcode(),
               description: "",
               price: "0.00",
@@ -329,7 +383,7 @@ const AddModal = () => {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={!isValid}
+                      disabled={!isValid || loading}
                       color="primary"
                       size="large"
                       sx={{
@@ -337,7 +391,7 @@ const AddModal = () => {
                         padding: 2,
                       }}
                     >
-                      <AddShoppingCartIcon />
+                      {isEditMode ? <EditIcon /> : <AddShoppingCartIcon />}
                     </Button>
                   </Stack>
                 </Stack>

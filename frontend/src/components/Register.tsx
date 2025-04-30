@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Button,
@@ -47,7 +46,7 @@ const Register = () => {
     ) => {
       axios
         .post(`${import.meta.env.VITE_API_URL}/auth/signup`, values)
-        .then((res) => {
+        .then(() => {
           enqueueSnackbar(
             "Successfully registered user. Please proceed to login.",
             {

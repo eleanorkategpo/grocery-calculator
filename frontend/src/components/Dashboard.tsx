@@ -17,7 +17,6 @@ import Swal from "sweetalert2";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
-import GroceryLogo from "../assets/logo.png";
 import { ShoppingBag } from "@mui/icons-material";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -51,6 +50,7 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     setAnchorEl(null);
+    setLoading(true);
     Swal.fire({
       title: "Are you sure?",
       text: "You want to logout?",
@@ -61,10 +61,11 @@ const Dashboard = () => {
       if (result.isConfirmed) {
         axios
           .get(`${API_URL}/auth/logout`)
-          .then((res: any) => {
+          .then(() => {
             axios.defaults.headers.common["Authorization"] = null;
             localStorage.removeItem("user");
             navigate("/");
+            setLoading(false);
           })
           .catch((err) => {
             console.log(err);

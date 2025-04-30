@@ -2,7 +2,7 @@ import { Box, Divider, Paper, Typography, Grid, Stack } from "@mui/material";
 import UserStore from "../../store/UserStore";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Grocery } from "../../constants/Schema";
 import Footer from "./Footer";
@@ -13,7 +13,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 const MyCart = () => {
   const userStore = UserStore();
   const { groceryId } = useParams();
-  const navigate = useNavigate();
 
   // Reset checkout state when component mounts
   useEffect(() => {
@@ -68,74 +67,77 @@ const MyCart = () => {
             No items in cart
           </Typography>
         ) : (
-          userStore.groceryData?.items?.map((item) => (
-            <Grid container key={item.barcode} spacing={1}>
-              <Grid
-                size={{ xs: 5 }}
-                sx={{
-                  textAlign: "left",
-                  textWrap: "wrap",
-                  overflow: "visible",
-                  wordWrap: "break-word",
-                  overflowWrap: "break-word",
-                  whiteSpace: "normal",
-                }}
-              >
-                <Typography variant="body1">{item.description}</Typography>
+          userStore.groceryData?.items?.map((item) => {
+            if (!item) return
+            return (
+              <Grid container key={item.barcode} spacing={1}>
+                <Grid
+                  size={{ xs: 5 }}
+                  sx={{
+                    textAlign: "left",
+                    textWrap: "wrap",
+                    overflow: "visible",
+                    wordWrap: "break-word",
+                    overflowWrap: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  <Typography variant="body1">{item.description}</Typography>
+                </Grid>
+                <Grid
+                  size={{ xs: 1 }}
+                  sx={{
+                    textAlign: "left",
+                    textWrap: "wrap",
+                    overflow: "visible",
+                    wordWrap: "break-word",
+                    overflowWrap: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  <Typography variant="body1">{item.quantity}</Typography>
+                </Grid>
+                <Grid
+                  size={{ xs: 3 }}
+                  textAlign="right"
+                  sx={{
+                    textAlign: "left",
+                    textWrap: "wrap",
+                    overflow: "visible",
+                    wordWrap: "break-word",
+                    overflowWrap: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  <Typography variant="body1">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "PHP",
+                    }).format(item.price)}
+                  </Typography>
+                </Grid>
+                <Grid
+                  size={{ xs: 3 }}
+                  textAlign="right"
+                  sx={{
+                    textAlign: "left",
+                    textWrap: "wrap",
+                    overflow: "visible",
+                    wordWrap: "break-word",
+                    overflowWrap: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  <Typography variant="body1">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "PHP",
+                    }).format(item.total)}
+                  </Typography>
+                </Grid>
               </Grid>
-              <Grid
-                size={{ xs: 1 }}
-                sx={{
-                  textAlign: "left",
-                  textWrap: "wrap",
-                  overflow: "visible",
-                  wordWrap: "break-word",
-                  overflowWrap: "break-word",
-                  whiteSpace: "normal",
-                }}
-              >
-                <Typography variant="body1">{item.quantity}</Typography>
-              </Grid>
-              <Grid
-                size={{ xs: 3 }}
-                textAlign="right"
-                sx={{
-                  textAlign: "left",
-                  textWrap: "wrap",
-                  overflow: "visible",
-                  wordWrap: "break-word",
-                  overflowWrap: "break-word",
-                  whiteSpace: "normal",
-                }}
-              >
-                <Typography variant="body1">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "PHP",
-                  }).format(item.price)}
-                </Typography>
-              </Grid>
-              <Grid
-                size={{ xs: 3 }}
-                textAlign="right"
-                sx={{
-                  textAlign: "left",
-                  textWrap: "wrap",
-                  overflow: "visible",
-                  wordWrap: "break-word",
-                  overflowWrap: "break-word",
-                  whiteSpace: "normal",
-                }}
-              >
-                <Typography variant="body1">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "PHP",
-                  }).format(item.total)}
-                </Typography>
-              </Grid>
-            </Grid>
-          ))
+            );
+          })
         )}
 
         <Divider sx={{ my: 1, backgroundColor: "black" }} />
@@ -165,7 +167,7 @@ const MyCart = () => {
 const GrandTotal = ({ groceryData }: { groceryData: Grocery | null }) => {
   const userStore = UserStore();
   const grandTotal =
-    userStore.groceryData?.items?.reduce((acc, item) => acc + item.total, 0) ??
+    userStore.groceryData?.items?.reduce((acc, item) => acc + item?.total, 0) ??
     0;
   const [isOverBudget, setIsOverBudget] = useState(false);
 

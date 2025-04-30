@@ -1,15 +1,13 @@
-import React, { useEffect, useState, useRef, TouchEvent } from "react";
+import { useEffect, useState, useRef, TouchEvent } from "react";
 import {
   Box,
   Card,
   CardContent,
   Typography,
-  CircularProgress,
-  Button,
-  Stack,
+  CircularProgress, Stack,
   Slide,
   IconButton,
-  Divider,
+  Divider
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import axios from "axios";

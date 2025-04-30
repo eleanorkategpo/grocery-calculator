@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Stack,
@@ -6,14 +6,11 @@ import {
   Typography,
   Button,
   Modal,
-  IconButton,
-  TextField,
-  InputLabel,
+  IconButton, InputLabel,
   FormControl,
   Select,
   MenuItem,
-  CircularProgress,
-  Divider,
+  CircularProgress
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
@@ -53,7 +50,7 @@ const CheckoutModal = () => {
 
   // Calculate total amount from cart items
   const totalAmount =
-    userStore.groceryData?.items?.reduce((sum, item) => sum + item.total, 0) ??
+    userStore.groceryData?.items?.reduce((sum, item) => sum + item?.total, 0) ??
     0;
 
   const handleClose = () => {

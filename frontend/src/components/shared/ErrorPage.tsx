@@ -1,5 +1,4 @@
 // frontend/src/components/ErrorPage.tsx
-import React from "react";
 import { Box, Typography } from "@mui/material";
 
 const ErrorPage = () => {

@@ -7,7 +7,7 @@ import ErrorPage from "../components/shared/ErrorPage";
 import MyCart from "../components/Dashboard/MyCart";
 import GroceryGenerate from "../components/Dashboard/GroceryGenerate";
 import PreviousCarts from "../components/Dashboard/PreviousCarts";
-import ShoppingList from "../components/Dashboard/ShoppingLIst";
+import ShoppingList from "../components/Dashboard/ShoppingList";
 
 // Mock authentication function
 const isAuthenticated = () => {

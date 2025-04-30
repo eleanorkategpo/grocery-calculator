@@ -46,3 +46,4 @@ jspm_packages/
 # Rest client files (for VS Code)
 *.rest
 *.http 
+.vercel

@@ -7,15 +7,17 @@ import axios from "axios";
 import { Grocery } from "../../constants/Schema";
 import Footer from "./Footer";
 import EditCart from "./EditCart";
-
+import LoadingOverlay from "../shared/LoadingOverlay";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const MyCart = () => {
+  const [loading, setLoading] = useState(false);  
   const userStore = UserStore();
   const { groceryId } = useParams();
 
   // Reset checkout state when component mounts
   useEffect(() => {
+    setLoading(true);
     userStore.setGroceryData(null);
 
     // Fetch grocery data
@@ -24,6 +26,8 @@ const MyCart = () => {
         ...res.data.data.grocery,
         items: res.data.data.items,
       });
+    }).finally(() => {
+      setLoading(false);
     });
   }, [groceryId]);
 
@@ -38,6 +42,7 @@ const MyCart = () => {
         margin: "0 auto",
       }}
     >
+      <LoadingOverlay loading={loading} />
       <Typography variant="h4" className="cutive-font" py={2} fontWeight="bold">
         * MY CART *
       </Typography>

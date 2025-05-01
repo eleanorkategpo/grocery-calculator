@@ -29,6 +29,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { GroceryItem } from "../../constants/Schema";
 import CloseIcon from "@mui/icons-material/Close";
 import { DoNotTouch } from "@mui/icons-material";
+import LoadingOverlay from "../shared/LoadingOverlay";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -641,6 +642,7 @@ const ShoppingList = () => {
       sx={{ width: "100%", height: "100%", p: 2 }}
       overflow="auto"
     >
+      <LoadingOverlay loading={loadingPrevious || loadingShoppingList} />
       <Grid container sx={{ width: "100%", height: "100%", overflow: "auto" }}>
         <Grid
           size={{ xs: 12, md: 6 }}

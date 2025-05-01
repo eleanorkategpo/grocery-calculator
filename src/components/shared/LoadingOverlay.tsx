@@ -1,5 +1,4 @@
-import LoadingGif from "../../assets/checkout-loading.gif";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 const LoadingOverlay = ({ loading }: { loading: boolean }) => {
   return (
     loading && (
@@ -17,7 +16,7 @@ const LoadingOverlay = ({ loading }: { loading: boolean }) => {
           zIndex: 1000,
         }}
       >
-        <img src={LoadingGif} alt="loading" width="150px" height="150px" />
+        <CircularProgress />
       </Box>
     )
   );

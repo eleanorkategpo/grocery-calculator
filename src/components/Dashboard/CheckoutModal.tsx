@@ -197,7 +197,7 @@ const CheckoutModal = () => {
               disabled={
                 loading ||
                 (paymentMethod === "cash" &&
-                  parseFloat(amountTendered || "0") < totalAmount)
+                  parseFloat(amountTendered || "0") > totalAmount)
               }
               onClick={handleCheckout}
               startIcon={

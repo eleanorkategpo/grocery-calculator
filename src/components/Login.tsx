@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Paper, Stack, TextField, Typography, Link } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+  Link,
+} from "@mui/material";
 import GroceryLogo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { enqueueSnackbar } from "notistack";
+import LoadingOverlay from "./shared/LoadingOverlay";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Login = () => {
@@ -36,13 +46,20 @@ const Login = () => {
         throw new Error("Password must be at least 6 characters");
       }
 
-      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
-      axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
+      const res = await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password,
+      });
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${res.data.token}`;
       localStorage.setItem("user", JSON.stringify(res.data));
       enqueueSnackbar("Login successful!", { variant: "success" });
       navigate("/dashboard/new-grocery");
     } catch (err: any) {
-      setError( err?.response?.data?.message ?? err?.message ?? "Authentication failed");
+      setError(
+        err?.response?.data?.message ?? err?.message ?? "Authentication failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -52,20 +69,21 @@ const Login = () => {
     <Box
       component="main"
       sx={{
-        minHeight: '100vh',
-        position: 'fixed',
+        minHeight: "100%",
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100vw',
-        background: 'var(--gradient-color)',
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100vw",
+        background: "var(--gradient-color)",
         p: 2,
       }}
     >
+      <LoadingOverlay loading={loading} />
       <Paper
         component="form"
         onSubmit={handleLogin}
@@ -73,17 +91,27 @@ const Login = () => {
         sx={{
           maxWidth: 400,
           minWidth: 300,
-          width: '100%',
+          width: "100%",
           px: { xs: 2, md: 4 },
           py: { xs: 3, md: 4 },
           borderRadius: 2,
-          bgcolor: 'var(--paper-background-color)',
-      
+          bgcolor: "var(--paper-background-color)",
         }}
       >
         <Stack spacing={3} alignItems="center">
-          <Box component="img" src={GroceryLogo} alt="KuripotKart" sx={{ width: 160, height: 150 }} />
-          <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: "Cutive" }}>Kuripot Smart, Grocery Cart</Typography>
+          <Box
+            component="img"
+            src={GroceryLogo}
+            alt="KuripotKart"
+            sx={{ width: 160, height: 150 }}
+          />
+          <Typography
+            variant="body1"
+            fontWeight="bold"
+            sx={{ fontFamily: "Cutive" }}
+          >
+            Kuripot Smart, Grocery Cart
+          </Typography>
           {error && (
             <Typography color="error" variant="body2" align="center">
               {error}
@@ -112,13 +140,18 @@ const Login = () => {
             fullWidth
             size="large"
             disabled={loading}
-            startIcon={loading && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading && <CircularProgress size={20} color="inherit" />
+            }
           >
-            {loading ? 'Signing In' : 'Sign In'}
+            {loading ? "Signing In" : "Sign In"}
           </Button>
           <Typography variant="body2">
-            Don't have an account?{' '}
-            <Link onClick={() => navigate('/register')} sx={{ cursor: 'pointer' }}>
+            Don't have an account?{" "}
+            <Link
+              onClick={() => navigate("/register")}
+              sx={{ cursor: "pointer" }}
+            >
               Sign Up
             </Link>
           </Typography>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   IconButton,
   Modal,
@@ -20,6 +20,7 @@ import axios from "axios";
 import { enqueueSnackbar } from "notistack";
 import { GroceryItem } from "../../constants/Schema";
 import EditItemModal from "./EditItemModal";
+import { PriorityHigh } from "@mui/icons-material";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -28,29 +29,41 @@ const EditCart = () => {
   const [selectedItem, setSelectedItem] = useState<GroceryItem | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  // 1) Create a memoized, filtered & sorted array:
+  const sortedItems = useMemo<GroceryItem[]>(() => {
+    const items = userStore.groceryData?.items ?? [];
+    return items
+      .filter((item): item is GroceryItem => Boolean(item))
+      .sort((a, b) => {
+        const aFree = a.price === 0;
+        const bFree = b.price === 0;
+        if (aFree && !bFree) return -1;
+        if (!aFree && bFree) return 1;
+        return a.description.localeCompare(b.description);
+      });
+  }, [userStore.groceryData?.items]);
+
   const handleItemEdit = (item: GroceryItem) => {
-    setIsEditModalOpen(false)
+    setIsEditModalOpen(false);
     userStore.setOpenAddModal(true);
     userStore.setEditItem(item);
   };
 
   const handleItemDelete = async (itemId: string) => {
     try {
-      await axios.delete(`${API_URL}/grocery/item/${itemId}`);
-
-      // Update local state by removing the deleted item
-      if (userStore.groceryData) {
-        const filteredItems = userStore.groceryData.items.filter(
-          (item) => item && item._id !== itemId
-        );
-
-        userStore.setGroceryData({
-          ...userStore.groceryData,
-          items: filteredItems,
-        });
-      }
-
-      enqueueSnackbar("Item deleted successfully", { variant: "success" });
+      axios.delete(`${API_URL}/grocery/item/${itemId}`).then((res) => {
+        if (res.status === 204) {
+          if (userStore.groceryData) {
+            userStore.setGroceryData({
+              ...userStore.groceryData,
+              items: userStore.groceryData.items.filter(
+                (it) => it && it._id !== itemId
+              ),
+            });
+          }
+          enqueueSnackbar("Item deleted successfully", { variant: "success" });
+        }
+      });
     } catch (error) {
       console.error("Error deleting item:", error);
       enqueueSnackbar("Failed to delete item", { variant: "error" });
@@ -62,12 +75,9 @@ const EditCart = () => {
     setIsEditModalOpen(false);
   };
 
-  // Calculate total amount safely
   const calculateTotal = () => {
-    if (!userStore.groceryData?.items) return 0;
-
-    return userStore.groceryData.items
-      .filter((item) => item) // Filter out any null/undefined items
+    return (userStore.groceryData?.items ?? [])
+      .filter((item): item is GroceryItem => Boolean(item))
       .reduce((sum, item) => sum + (item.total || 0), 0);
   };
 
@@ -94,57 +104,71 @@ const EditCart = () => {
             bgcolor: "background.paper",
             borderRadius: 2,
             boxShadow: 24,
-            p: 4,
+            p: 2,
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
+            height: "90%",
           }}
         >
-          <Stack direction="row" justifyContent="space-between" mb={2}>
+          <Stack direction="row" justifyContent="space-between">
             <Typography variant="h6">Edit Cart Items</Typography>
             <IconButton onClick={() => userStore.setOpenEditCartModal(false)}>
-              <CloseIcon />
+              <CloseIcon sx={{ color: "black" }} />
             </IconButton>
           </Stack>
 
           <Divider sx={{ backgroundColor: "black" }} />
 
-          <Box sx={{ overflow: "auto", flex: 1 }}>
-            {userStore.groceryData?.items &&
-            userStore.groceryData.items.filter(Boolean).length > 0 ? (
+          <Box sx={{ overflow: "auto" }}>
+            {sortedItems.length > 0 ? (
               <List>
-                {userStore.groceryData.items.map((item) => {
-                  if (!item) return null;
-                  return (
-                    <Box key={item._id}>
-                      <ListItem>
-                        <ListItemText
-                          primary={item.description}
-                          secondary={`Qty: ${item.quantity} ${
-                            item.unit
-                          } - ₱${item.price?.toFixed(2)} each`}
-                        />
-                        <ListItemSecondaryAction>
-                          <Stack direction="row" spacing={1}>
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleItemEdit(item)}
-                            >
-                              <EditIcon color="primary" />
-                            </IconButton>
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleItemDelete(item._id)}
-                            >
-                              <DeleteIcon color="error" />
-                            </IconButton>
-                          </Stack>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                      <Divider />
-                    </Box>
-                  );
-                })}
+                {sortedItems.map((item) => (
+                  <Box key={item._id}>
+                    <ListItem sx={{ p: 0 }}>
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body1"
+                            fontWeight="medium"
+                            noWrap
+                            color={item.price == 0 ? "red" : "black"}
+                          >
+                            {item.description}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography
+                            sx={{ color: item.price == 0 ? "red" : "black" }}
+                          >
+                            Qty: {item.quantity} {item.unit} - ₱
+                            {item.price?.toFixed(2)} each
+                          </Typography>
+                        }
+                      />
+                      <ListItemSecondaryAction>
+                        <Stack direction="row" gap={1} alignItems="center">
+                          {item.price == 0 && (
+                            <PriorityHigh sx={{ color: "red" }} />
+                          )}
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleItemEdit(item)}
+                          >
+                            <EditIcon color="primary" />
+                          </IconButton>
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleItemDelete(item._id)}
+                          >
+                            <DeleteIcon color="error" />
+                          </IconButton>
+                        </Stack>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                    <Divider />
+                  </Box>
+                ))}
               </List>
             ) : (
               <Stack
@@ -160,11 +184,12 @@ const EditCart = () => {
               </Stack>
             )}
           </Box>
+
           <Divider sx={{ backgroundColor: "black" }} />
 
-          <Stack direction="row" justifyContent="space-between" mt={2}>
+          <Stack direction="row" justifyContent="flex-end" mt={2}>
             <Typography variant="h6">
-              Total: ₱{calculateTotal()?.toFixed(2)}
+              Total: ₱{calculateTotal().toFixed(2)}
             </Typography>
           </Stack>
         </Paper>

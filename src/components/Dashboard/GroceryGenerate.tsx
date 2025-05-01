@@ -19,6 +19,7 @@ import StorefrontIcon from "@mui/icons-material/Storefront";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "../shared/LoadingOverlay";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const GroceryGenerate = () => {
@@ -56,20 +57,18 @@ const GroceryGenerate = () => {
       updatedAt: new Date(),
     };
     try {
-      axios.post(
-        `${API_URL}/grocery/new-grocery`,
-        grocery
-      )
-      .then((response) => {
-        const id = response.data.data.grocery._id;
-        navigate(`/dashboard/${id}/cart`);
-      })
-      .catch((error) => {
-        console.error("Error creating grocery:", error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      axios
+        .post(`${API_URL}/grocery/new-grocery`, grocery)
+        .then((response) => {
+          const id = response.data.data.grocery._id;
+          navigate(`/dashboard/${id}/cart`);
+        })
+        .catch((error) => {
+          console.error("Error creating grocery:", error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     } catch (error) {
       console.error("Error creating grocery:", error);
     } finally {
@@ -79,24 +78,7 @@ const GroceryGenerate = () => {
 
   return (
     <>
-      {isLoading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 1000,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      )}
+      <LoadingOverlay loading={isLoading} />
       <Fade in={fadeIn} timeout={800}>
         <Paper
           elevation={3}
@@ -135,9 +117,7 @@ const GroceryGenerate = () => {
             <Grow in={fadeIn} timeout={1200}>
               <Stack direction="row" alignItems="center" spacing={2}>
                 <CalendarTodayIcon color="primary" />
-                <Typography variant="body1">
-                  {currentDateTime}
-                </Typography>
+                <Typography variant="body1">{currentDateTime}</Typography>
               </Stack>
             </Grow>
 

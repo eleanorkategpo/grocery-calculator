@@ -712,7 +712,8 @@ const ShoppingList = () => {
             sx={{
               p: { xs: 2, md: 3 },
               borderRadius: 2,
-              height: "100%",
+              minHeight: "350px",
+              height: "fit-content",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",

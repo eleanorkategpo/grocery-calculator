@@ -45,8 +45,7 @@ const BoxStyled = styled(Box)(() => ({
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  height: "fit-content",
-  overflow: "auto",
+  overflowY: "auto",
 }));
 
 const AddModal = () => {
@@ -60,9 +59,7 @@ const AddModal = () => {
   const validationSchema = Yup.object().shape({
     barcode: Yup.string().required("Barcode is required"),
     description: Yup.string().required("Description is required"),
-    price: Yup.number()
-      .required("Price is required")
-      .positive("Price must be positive"),
+    price: Yup.number(),
     quantity: Yup.number()
       .required("Quantity is required")
       .positive("Quantity must be positive")
@@ -151,7 +148,7 @@ const AddModal = () => {
             enqueueSnackbar("Item added successfully", {
               variant: "success",
             });
-            handleClose();
+            // handleClose();
             if (userStore.groceryData) {
               userStore.setGroceryData({
                 ...userStore.groceryData,
@@ -188,6 +185,7 @@ const AddModal = () => {
             zIndex: 1000,
             padding: 2,
             height: 50,
+            mb: 6,
           }}
         >
           <Typography variant="h6">
@@ -197,222 +195,226 @@ const AddModal = () => {
             <CloseIcon color="secondary" />
           </IconButton>
         </Stack>
-        <Box sx={{  paddingTop: "40px", width: "100%" }}>
-          {/* <Typography component="span">Scan Barcode</Typography>
+        {/* <Typography component="span">Scan Barcode</Typography>
           <OCRCamera /> */}
 
-          <Formik
-            initialValues={
-              isEditMode
-                ? {
-                    barcode: userStore.editItem?.barcode || "",
-                    description: userStore.editItem?.description || "",
-                    price: userStore.editItem?.price?.toString() || "0.00",
-                    quantity: userStore.editItem?.quantity || 1,
-                    unit: userStore.editItem?.unit || "pc",
-                    total: userStore.editItem?.total?.toString() || "0.00",
+        <Formik
+          initialValues={
+            isEditMode
+              ? {
+                  barcode: userStore.editItem?.barcode || "",
+                  description: userStore.editItem?.description || "",
+                  price: userStore.editItem?.price?.toString() || "0.00",
+                  quantity: userStore.editItem?.quantity || 1,
+                  unit: userStore.editItem?.unit || "pc",
+                  total: userStore.editItem?.total?.toString() || "0.00",
+                }
+              : {
+                  barcode: randomizeBarcode(),
+                  description: "",
+                  price: "0.00",
+                  quantity: 1,
+                  unit: "pc",
+                  total: "0.00",
+                }
+          }
+          enableReinitialize={true}
+          validationSchema={validationSchema}
+          onSubmit={(values) => {
+            // Handle form submission
+            handleSubmit(values);
+          }}
+        >
+          {({
+            handleChange,
+            handleBlur,
+            values,
+            errors,
+            touched,
+            setFieldValue,
+            isValid,
+          }) => (
+            <Form>
+              <Stack direction="column" spacing={2} sx={{ pt: 4 }}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <InputLabel>Barcode</InputLabel>
+                  <Tooltip title="Randomize Barcode">
+                    <IconButton
+                      onClick={() => randomizeBarcode(setFieldValue)}
+                      sx={{
+                        backgroundColor: "var(--primary-color)",
+                        color: "white",
+                        borderRadius: 10,
+                        padding: 1,
+                      }}
+                    >
+                      <ShuffleIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+                <TextField
+                  name="barcode"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  onChange={(e) =>
+                    setFieldValue("barcode", e.target.value.toUpperCase())
                   }
-                : {
-                    barcode: randomizeBarcode(),
-                    description: "",
-                    price: "0.00",
-                    quantity: 1,
-                    unit: "pc",
-                    total: "0.00",
-                  }
-            }
-            enableReinitialize={true}
-            validationSchema={validationSchema}
-            onSubmit={(values) => {
-              // Handle form submission
-              handleSubmit(values);
-            }}
-          >
-            {({
-              handleChange,
-              handleBlur,
-              values,
-              errors,
-              touched,
-              setFieldValue,
-              isValid,
-            }) => (
-              <Form>
-                <Stack direction="column" spacing={2}>
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <InputLabel>Barcode</InputLabel>
-                    <Tooltip title="Randomize Barcode">
-                      <IconButton
-                        onClick={() => randomizeBarcode(setFieldValue)}
-                        sx={{
-                          backgroundColor: "var(--primary-color)",
-                          color: "white",
-                          borderRadius: 10,
-                          padding: 1,
-                        }}
-                      >
-                        <ShuffleIcon sx={{ fontSize: 20 }} />
-                      </IconButton>
-                    </Tooltip>
-                  </Stack>
-                  <TextField
-                    name="barcode"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values.barcode}
-                    error={touched.barcode && Boolean(errors.barcode)}
-                    helperText={touched.barcode && errors.barcode}
-                  />
-                  <InputLabel>Item Description</InputLabel>
+                  onBlur={handleBlur}
+                  value={values.barcode}
+                  error={touched.barcode && Boolean(errors.barcode)}
+                  helperText={touched.barcode && errors.barcode}
+                  inputProps={{ style: { textTransform: "uppercase" } }}
+                />
+                <InputLabel>Item Description</InputLabel>
 
-                  <TextField
-                    name="description"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values.description}
-                    error={touched.description && Boolean(errors.description)}
-                    helperText={touched.description && errors.description}
-                  />
-                  <InputLabel>Price</InputLabel>
-                  <CurrencyInput
-                    name="price"
-                    decimalScale={2}
-                    onValueChange={(value) => {
-                      setFieldValue("price", value);
-                    }}
-                    className="number-font"
-                    onBlur={handleBlur}
-                    value={values.price}
-                    prefix="₱ "
-                    style={{
-                      width: "100%",
-                      margin: "normal",
-                      height: 50,
-                      borderRadius: 10,
-                      border: "none",
-                      boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
-                      fontSize: 20,
-                      fontWeight: 600,
-                      color: "var(--neon-green)",
-                      padding: "0 10px",
-                      background: "black",
-                    }}
-                    onFocus={() => {
-                      if (priceInputRef.current) {
-                        priceInputRef.current.select();
+                <TextField
+                  name="description"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    // capitalize first letter of each word
+                    const raw = e.target.value;
+                    const capitalized = raw.replace(/\b\w/g, (char) => char.toUpperCase());
+                    setFieldValue("description", capitalized);
+                  }}
+                  onBlur={handleBlur}
+                  value={values.description}
+                  error={touched.description && Boolean(errors.description)}
+                  helperText={touched.description && errors.description}
+                />
+                <InputLabel>Price</InputLabel>
+                <CurrencyInput
+                  name="price"
+                  decimalScale={2}
+                  onValueChange={(value) => {
+                    setFieldValue("price", value);
+                  }}
+                  className="number-font"
+                  onBlur={handleBlur}
+                  value={values.price}
+                  prefix="₱ "
+                  style={{
+                    width: "100%",
+                    margin: "normal",
+                    height: 50,
+                    borderRadius: 10,
+                    border: "none",
+                    boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
+                    fontSize: 20,
+                    fontWeight: 600,
+                    color: "var(--neon-green)",
+                    padding: "0 10px",
+                    background: "black",
+                  }}
+                  onFocus={() => {
+                    if (priceInputRef.current) {
+                      priceInputRef.current.select();
+                    }
+                  }}
+                  ref={priceInputRef}
+                />
+                <InputLabel>Quantity</InputLabel>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="center"
+                  spacing={1}
+                  marginY={2}
+                >
+                  <IconButton
+                    color="primary"
+                    onClick={() => {
+                      if (values.quantity > 1) {
+                        setFieldValue("quantity", values.quantity - 1);
                       }
                     }}
-                    ref={priceInputRef}
-                  />
-                  <InputLabel>Quantity</InputLabel>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="center"
-                    spacing={1}
-                    marginY={2}
                   >
-                    <IconButton
-                      color="primary"
-                      onClick={() => {
-                        if (values.quantity > 1) {
-                          setFieldValue("quantity", values.quantity - 1);
-                        }
-                      }}
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                    <TextField
-                      name="quantity"
-                      type="number"
-                      variant="outlined"
-                      fullWidth
-                      margin="normal"
+                    <RemoveIcon />
+                  </IconButton>
+                  <TextField
+                    name="quantity"
+                    type="number"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.quantity}
+                    error={touched.quantity && Boolean(errors.quantity)}
+                    helperText={touched.quantity && errors.quantity}
+                    inputProps={{ min: 1 }}
+                    sx={{
+                      flex: 1,
+                      minWidth: { xs: 100, md: 150 },
+                      input: { textAlign: "center" },
+                    }}
+                  />
+                  <IconButton
+                    color="primary"
+                    onClick={() => {
+                      setFieldValue("quantity", values.quantity + 1);
+                    }}
+                  >
+                    <AddIcon />
+                  </IconButton>
+                  <FormControl variant="outlined" fullWidth margin="normal">
+                    <InputLabel id="unit-label">Unit</InputLabel>
+                    <Select
+                      labelId="unit-label"
+                      name="unit"
+                      value={values.unit}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      value={values.quantity}
-                      error={touched.quantity && Boolean(errors.quantity)}
-                      helperText={touched.quantity && errors.quantity}
-                      inputProps={{ min: 1 }}
-                      sx={{
-                        flex: 1,
-                        minWidth: { xs: 100, md: 150 },
-                        input: { textAlign: "center" },
-                      }}
-                    />
-                    <IconButton
-                      color="primary"
-                      onClick={() => {
-                        setFieldValue("quantity", values.quantity + 1);
-                      }}
+                      error={touched.unit && Boolean(errors.unit)}
+                      variant="filled"
                     >
-                      <AddIcon />
-                    </IconButton>
-                    <FormControl variant="outlined" fullWidth margin="normal">
-                      <InputLabel id="unit-label">Unit</InputLabel>
-                      <Select
-                        labelId="unit-label"
-                        name="unit"
-                        value={values.unit}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.unit && Boolean(errors.unit)}
-                        variant="filled"
-                      >
-                        <MenuItem value="kg">kg</MenuItem>
-                        <MenuItem value="pc">pc</MenuItem>
-                        <MenuItem value="g">g</MenuItem>
-                        <MenuItem value="lb">lb</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                  <Divider sx={{ backgroundColor: "var(--secondary-color)" }} />
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Box>
-                      <InputLabel>Total Price</InputLabel>
-                      <Typography variant="h4">
-                        {" "}
-                        {new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "PHP",
-                        }).format(
-                          Number(values.price) * Number(values.quantity)
-                        )}
-                      </Typography>
-                    </Box>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={!isValid || loading}
-                      color="primary"
-                      size="large"
-                      sx={{
-                        borderRadius: 10,
-                        padding: 2,
-                      }}
-                    >
-                      {isEditMode ? <Save /> : <AddShoppingCartIcon />}
-                    </Button>
-                  </Stack>
+                      <MenuItem value="kg">kg</MenuItem>
+                      <MenuItem value="pc">pc</MenuItem>
+                      <MenuItem value="g">g</MenuItem>
+                      <MenuItem value="lb">lb</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Stack>
-              </Form>
-            )}
-          </Formik>
-        </Box>
+                <Divider sx={{ backgroundColor: "var(--secondary-color)" }} />
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Box>
+                    <InputLabel>Total Price</InputLabel>
+                    <Typography variant="h4">
+                      {" "}
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "PHP",
+                      }).format(Number(values.price) * Number(values.quantity))}
+                    </Typography>
+                  </Box>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={!isValid || loading}
+                    color="primary"
+                    size="large"
+                    sx={{
+                      borderRadius: 10,
+                      padding: 2,
+                    }}
+                  >
+                    {isEditMode ? <Save /> : <AddShoppingCartIcon />}
+                  </Button>
+                </Stack>
+              </Stack>
+            </Form>
+          )}
+        </Formik>
       </BoxStyled>
     </Modal>
   );

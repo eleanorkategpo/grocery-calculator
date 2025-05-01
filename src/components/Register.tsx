@@ -1,12 +1,9 @@
 import {
   Box,
   Button,
-  CircularProgress,
-  createTheme,
-  Paper,
+  CircularProgress, Paper,
   TextField,
-  Typography,
-  useMediaQuery,
+  Typography
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -15,8 +12,6 @@ import axios from "axios";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 const Register = () => {
-  const theme = createTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
@@ -73,13 +68,15 @@ const Register = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        minHeight: "100vh",
+        minHeight: "100%",
+        width: "100%",
+        p: 2,
       }}
     >
       <Paper
         elevation={3}
         sx={{
-          p: isMobile ? 2 : 4,
+          p: 4,
           width: "100%",
           borderRadius: 2,
         }}

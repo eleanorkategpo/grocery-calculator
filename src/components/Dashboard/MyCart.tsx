@@ -8,10 +8,11 @@ import { Grocery } from "../../constants/Schema";
 import Footer from "./Footer";
 import EditCart from "./EditCart";
 import LoadingOverlay from "../shared/LoadingOverlay";
+import { PriorityHigh } from "@mui/icons-material";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const MyCart = () => {
-  const [loading, setLoading] = useState(false);  
+  const [loading, setLoading] = useState(false);
   const userStore = UserStore();
   const { groceryId } = useParams();
 
@@ -21,14 +22,17 @@ const MyCart = () => {
     userStore.setGroceryData(null);
 
     // Fetch grocery data
-    axios.get(`${API_URL}/grocery/${groceryId}`).then((res) => {
-      userStore.setGroceryData({
-        ...res.data.data.grocery,
-        items: res.data.data.items,
+    axios
+      .get(`${API_URL}/grocery/${groceryId}`)
+      .then((res) => {
+        userStore.setGroceryData({
+          ...res.data.data.grocery,
+          items: res.data.data.items,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
       });
-    }).finally(() => {
-      setLoading(false);
-    });
   }, [groceryId]);
 
   return (
@@ -40,6 +44,8 @@ const MyCart = () => {
         color: "white",
         maxWidth: "500px",
         margin: "0 auto",
+        overflowY: "auto",
+        paddingBottom: 20,
       }}
     >
       <LoadingOverlay loading={loading} />
@@ -73,7 +79,7 @@ const MyCart = () => {
           </Typography>
         ) : (
           userStore.groceryData?.items?.map((item) => {
-            if (!item) return
+            if (!item) return;
             return (
               <Grid container key={item.barcode} spacing={1}>
                 <Grid
@@ -85,6 +91,11 @@ const MyCart = () => {
                     wordWrap: "break-word",
                     overflowWrap: "break-word",
                     whiteSpace: "normal",
+                    color: item.price == 0 ? "red" : "black",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 1,
                   }}
                 >
                   <Typography variant="body1">{item.description}</Typography>
@@ -98,6 +109,7 @@ const MyCart = () => {
                     wordWrap: "break-word",
                     overflowWrap: "break-word",
                     whiteSpace: "normal",
+                    color: item.price == 0 ? "red" : "black",
                   }}
                 >
                   <Typography variant="body1">{item.quantity}</Typography>
@@ -112,6 +124,7 @@ const MyCart = () => {
                     wordWrap: "break-word",
                     overflowWrap: "break-word",
                     whiteSpace: "normal",
+                    color: item.price == 0 ? "red" : "black",
                   }}
                 >
                   <Typography variant="body1">
@@ -131,6 +144,11 @@ const MyCart = () => {
                     wordWrap: "break-word",
                     overflowWrap: "break-word",
                     whiteSpace: "normal",
+                    color: item.price == 0 ? "red" : "black",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: 1,
                   }}
                 >
                   <Typography variant="body1">
@@ -139,6 +157,7 @@ const MyCart = () => {
                       currency: "PHP",
                     }).format(item.total)}
                   </Typography>
+                  {item.price == 0 && <PriorityHigh sx={{ color: "red" }} />}
                 </Grid>
               </Grid>
             );

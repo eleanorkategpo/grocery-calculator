@@ -29,8 +29,9 @@ const EditCart = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleItemEdit = (item: GroceryItem) => {
-    setSelectedItem(item);
-    setIsEditModalOpen(true);
+    setIsEditModalOpen(false)
+    userStore.setOpenAddModal(true);
+    userStore.setEditItem(item);
   };
 
   const handleItemDelete = async (itemId: string) => {
@@ -42,7 +43,7 @@ const EditCart = () => {
         const filteredItems = userStore.groceryData.items.filter(
           (item) => item && item._id !== itemId
         );
-        
+
         userStore.setGroceryData({
           ...userStore.groceryData,
           items: filteredItems,
@@ -64,9 +65,9 @@ const EditCart = () => {
   // Calculate total amount safely
   const calculateTotal = () => {
     if (!userStore.groceryData?.items) return 0;
-    
+
     return userStore.groceryData.items
-      .filter(item => item) // Filter out any null/undefined items
+      .filter((item) => item) // Filter out any null/undefined items
       .reduce((sum, item) => sum + (item.total || 0), 0);
   };
 
@@ -121,7 +122,7 @@ const EditCart = () => {
                           primary={item.description}
                           secondary={`Qty: ${item.quantity} ${
                             item.unit
-                          } - ₱${item.price.toFixed(2)} each`}
+                          } - ₱${item.price?.toFixed(2)} each`}
                         />
                         <ListItemSecondaryAction>
                           <Stack direction="row" spacing={1}>
@@ -146,16 +147,24 @@ const EditCart = () => {
                 })}
               </List>
             ) : (
-              <Typography variant="body1" align="center" sx={{ mt: 4 }}>
-                No items in cart
-              </Typography>
+              <Stack
+                direction="row"
+                justifyContent="center"
+                alignItems="center"
+                height="100%"
+                my={4}
+              >
+                <Typography variant="body1" align="center">
+                  No items in cart
+                </Typography>
+              </Stack>
             )}
           </Box>
           <Divider sx={{ backgroundColor: "black" }} />
 
           <Stack direction="row" justifyContent="space-between" mt={2}>
             <Typography variant="h6">
-              Total: ₱{calculateTotal().toFixed(2)}
+              Total: ₱{calculateTotal()?.toFixed(2)}
             </Typography>
           </Stack>
         </Paper>

@@ -63,12 +63,25 @@ const ShoppingListItemCard = ({
           cursor: "grab",
           "&:hover": { boxShadow: 3 },
           transition: "box-shadow 0.3s",
+          width: "100%",
         }}
         onClick={() => onClick(item)}
       >
         <Stack direction="row" spacing={2} alignItems="center">
+          <IconButton
+            size="small"
+            color="error"
+            onClick={(e) => {
+              e.stopPropagation();
+              updateQuantity(item._id, -1);
+            }}
+          >
+            <RemoveIcon />
+          </IconButton>
           <Avatar sx={{ bgcolor: "primary.main", color: "white" }}>
             {item.quantity}
+            {" "}
+            <span style={{ fontSize: 12 }}>{item.unit}</span>
           </Avatar>
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body1" fontWeight="medium" noWrap>
@@ -78,28 +91,17 @@ const ShoppingListItemCard = ({
               ₱{item.price.toFixed(2)} each
             </Typography>
           </Box>
-          <Stack direction="row" spacing={1}>
-            <IconButton
-              size="small"
-              color="error"
-              onClick={(e) => {
-                e.stopPropagation();
-                updateQuantity(item._id, -1);
-              }}
-            >
-              <RemoveIcon />
-            </IconButton>
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={(e) => {
-                e.stopPropagation();
-                updateQuantity(item._id, 1);
-              }}
-            >
-              <AddIcon />
-            </IconButton>
-          </Stack>
+
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              updateQuantity(item._id, 1);
+            }}
+          >
+            <AddIcon />
+          </IconButton>
         </Stack>
       </Paper>
     </motion.div>
@@ -152,11 +154,9 @@ const ShoppingList = () => {
     [0.8, 0.9, 1, 0.9, 0.8]
   );
 
-  // Fetch 56 items and shopping list on component mount
   useEffect(() => {
     fetchPreviousItems();
     fetchShoppingList();
-    // Initialize suggestion when component mounts
     if (currentItem) {
       const idx = Math.floor(Math.random() * suggestionMessages.length);
       setSuggestionPrompt(suggestionMessages[idx]);
@@ -324,7 +324,7 @@ const ShoppingList = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            height: 300,
+            height: 200,
           }}
         >
           <CircularProgress />
@@ -367,6 +367,7 @@ const ShoppingList = () => {
             rotate: cardRotation,
             scale: cardScale,
             position: "relative",
+            width: "100%",
           }}
           {...suggestionSwipeHandlers}
         >
@@ -388,7 +389,6 @@ const ShoppingList = () => {
                 component={motion.div}
                 style={{
                   opacity: deleteIconOpacity,
-                  
                 }}
               >
                 <DoNotTouch
@@ -475,7 +475,7 @@ const ShoppingList = () => {
     }
 
     return (
-      <Stack spacing={2} sx={{ mt: 2 }}>
+      <Stack spacing={2} sx={{ mt: 2, overflow: "auto" }}>
         {shoppingList.map((item) => (
           <ShoppingListItemCard
             key={item._id}
@@ -641,19 +641,24 @@ const ShoppingList = () => {
       sx={{ width: "100%", height: "100%", p: 2 }}
       overflow="auto"
     >
-      <Grid container sx={{ width: "100%", height: "100%" }}>
+      <Grid container sx={{ width: "100%", height: "100%", overflow: "auto" }}>
         <Grid
           size={{ xs: 12, md: 6 }}
           sx={{
             maxHeight: { xs: "40%", md: "100%" },
             p: 1,
-            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            width: "100%",
           }}
         >
+
           <Typography
             variant="h6"
-            sx={{ mb: 3, display: "flex", alignItems: "center" }}
-          >
+            sx={{ mb: 3, display: "flex", alignItems: "center", width: "100%" }}
+            >
             <AddShoppingCartIcon sx={{ mr: 1 }} />
             Previous Grocery Items
           </Typography>
@@ -670,10 +675,7 @@ const ShoppingList = () => {
           )}
         </Grid>
 
-        <Grid
-          size={{ xs: 12, md: 6 }}
-          sx={{ height: { xs: "60%", md: "100%" }, p: 1 }}
-        >
+        <Grid size={{ xs: 12, md: 6 }} sx={{ height: "fit-content", p: 1 }}>
           <Paper sx={{ p: 3, borderRadius: 2 }}>
             <Typography
               variant="h6"

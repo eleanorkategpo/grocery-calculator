@@ -25,9 +25,9 @@ import ShuffleIcon from "@mui/icons-material/Shuffle";
 import axios from "axios";
 import { useRef, useState } from "react";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import EditIcon from "@mui/icons-material/Edit";
 import { enqueueSnackbar } from "notistack";
 import { useParams } from "react-router-dom";
+import { Save } from "@mui/icons-material";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BoxStyled = styled(Box)(() => ({
@@ -46,6 +46,7 @@ const BoxStyled = styled(Box)(() => ({
   left: "50%",
   transform: "translate(-50%, -50%)",
   height: "fit-content",
+  overflow: "auto",
 }));
 
 const AddModal = () => {
@@ -54,7 +55,7 @@ const AddModal = () => {
   const { groceryId } = useParams();
   const [loading, setLoading] = useState(false);
   const isEditMode = Boolean(userStore.editItem);
-  
+
   // Validation schema using Yup
   const validationSchema = Yup.object().shape({
     barcode: Yup.string().required("Barcode is required"),
@@ -92,7 +93,7 @@ const AddModal = () => {
       total: Number(values.price) * Number(values.quantity),
     };
     setLoading(true);
-    
+
     if (isEditMode) {
       // Update existing item
       axios
@@ -103,32 +104,40 @@ const AddModal = () => {
             enqueueSnackbar("Item updated successfully", {
               variant: "success",
             });
-            
+
             if (userStore.groceryData) {
               // Create a new array with the updated item
-              const updatedItems = userStore.groceryData.items.map(item => {
-                if (item._id === userStore.editItem?._id) {
-                  console.log("Replacing item:", item, "with:", res.data.data.groceryItem);
+              const updatedItems = userStore.groceryData.items.map((item) => {
+                if (item?._id === userStore.editItem?._id) {
+                  console.log(
+                    "Replacing item:",
+                    item,
+                    "with:",
+                    res.data.data.groceryItem
+                  );
                   return res.data.data.groceryItem;
                 }
                 return item;
               });
-              
+
               // Update grocery data with new items array
               userStore.setGroceryData({
                 ...userStore.groceryData,
                 items: updatedItems,
               });
             }
-            
+
             // Close modal after state is updated
             handleClose();
           }
         })
         .catch((err) => {
-          enqueueSnackbar(err.response?.data?.message || "Failed to update item", {
-            variant: "error",
-          });
+          enqueueSnackbar(
+            err.response?.data?.message || "Failed to update item",
+            {
+              variant: "error",
+            }
+          );
         })
         .finally(() => {
           setLoading(false);
@@ -164,7 +173,7 @@ const AddModal = () => {
         });
     }
   };
-  
+
   return (
     <Modal open={userStore.openAddModal} onClose={handleClose}>
       <BoxStyled>
@@ -181,31 +190,37 @@ const AddModal = () => {
             height: 50,
           }}
         >
-          <Typography variant="h6">{isEditMode ? 'Edit Item' : 'Add Item'}</Typography>
+          <Typography variant="h6">
+            {isEditMode ? "Edit Item" : "Add Item"}
+          </Typography>
           <IconButton onClick={handleClose}>
             <CloseIcon color="secondary" />
           </IconButton>
         </Stack>
-        <Box sx={{ overflow: "auto", paddingTop: "40px", width: "100%" }}>
+        <Box sx={{  paddingTop: "40px", width: "100%" }}>
           {/* <Typography component="span">Scan Barcode</Typography>
           <OCRCamera /> */}
 
           <Formik
-            initialValues={isEditMode ? {
-              barcode: userStore.editItem?.barcode || '',
-              description: userStore.editItem?.description || '',
-              price: userStore.editItem?.price.toString() || '0.00',
-              quantity: userStore.editItem?.quantity || 1,
-              unit: userStore.editItem?.unit || 'pc',
-              total: userStore.editItem?.total.toString() || '0.00',
-            } : {
-              barcode: randomizeBarcode(),
-              description: "",
-              price: "0.00",
-              quantity: 1,
-              unit: "pc",
-              total: "0.00",
-            }}
+            initialValues={
+              isEditMode
+                ? {
+                    barcode: userStore.editItem?.barcode || "",
+                    description: userStore.editItem?.description || "",
+                    price: userStore.editItem?.price?.toString() || "0.00",
+                    quantity: userStore.editItem?.quantity || 1,
+                    unit: userStore.editItem?.unit || "pc",
+                    total: userStore.editItem?.total?.toString() || "0.00",
+                  }
+                : {
+                    barcode: randomizeBarcode(),
+                    description: "",
+                    price: "0.00",
+                    quantity: 1,
+                    unit: "pc",
+                    total: "0.00",
+                  }
+            }
             enableReinitialize={true}
             validationSchema={validationSchema}
             onSubmit={(values) => {
@@ -272,7 +287,6 @@ const AddModal = () => {
                   <CurrencyInput
                     name="price"
                     decimalScale={2}
-                    fixedDecimalLength={2}
                     onValueChange={(value) => {
                       setFieldValue("price", value);
                     }}
@@ -391,7 +405,7 @@ const AddModal = () => {
                         padding: 2,
                       }}
                     >
-                      {isEditMode ? <EditIcon /> : <AddShoppingCartIcon />}
+                      {isEditMode ? <Save /> : <AddShoppingCartIcon />}
                     </Button>
                   </Stack>
                 </Stack>

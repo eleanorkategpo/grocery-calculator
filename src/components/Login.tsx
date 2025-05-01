@@ -41,9 +41,8 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(res.data));
       enqueueSnackbar("Login successful!", { variant: "success" });
       navigate("/dashboard/new-grocery");
-    } catch (err) {
-      debugger
-      setError(err instanceof Error ? err.message : "Authentication failed");
+    } catch (err: any) {
+      setError( err?.response?.data?.message ?? err?.message ?? "Authentication failed");
     } finally {
       setLoading(false);
     }

@@ -156,6 +156,8 @@ const ShoppingList = () => {
   );
 
   useEffect(() => {
+    setLoadingPrevious(true);
+    setLoadingShoppingList(true);
     fetchPreviousItems();
     fetchShoppingList();
     if (currentItem) {
@@ -477,6 +479,9 @@ const ShoppingList = () => {
 
     return (
       <Stack spacing={2} sx={{ mt: 2, overflow: "auto" }}>
+        <Typography variant="body2" color="text.secondary" sx={{ fontSize: 10 }}>
+              Swipe left and right to update quantity
+            </Typography>
         {shoppingList.map((item) => (
           <ShoppingListItemCard
             key={item._id}
@@ -491,7 +496,7 @@ const ShoppingList = () => {
           color="text.secondary"
           className="number-font"
         >
-          Total: ₱
+          Estimated Total: ₱
           {shoppingList
             .reduce((acc, item) => acc + item.price * item.quantity, 0)
             .toFixed(2)}
@@ -520,6 +525,7 @@ const ShoppingList = () => {
         }}
         onClick={() => setShowItemDetails(false)}
       >
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -581,7 +587,7 @@ const ShoppingList = () => {
               </Box>
 
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body1">Estimated Total:</Typography>
+                <Typography variant="body1">Total:</Typography>
                 <Typography
                   variant="body1"
                   fontWeight="bold"
@@ -681,7 +687,7 @@ const ShoppingList = () => {
           <Paper sx={{ p: 3, borderRadius: 2 }}>
             <Typography
               variant="h6"
-              sx={{ mb: 3, display: "flex", alignItems: "center" }}
+              sx={{ display: "flex", alignItems: "center" }}
             >
               <Badge
                 badgeContent={shoppingList.length}
@@ -692,6 +698,8 @@ const ShoppingList = () => {
               </Badge>
               My Shopping List
             </Typography>
+
+            
 
             {renderShoppingList()}
           </Paper>

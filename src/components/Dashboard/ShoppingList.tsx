@@ -33,17 +33,18 @@ import LoadingOverlay from "../shared/LoadingOverlay";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Interface for the shopping list item with quantity
-interface ShoppingListItem extends GroceryItem {
+// Changed from interface to type
+type ShoppingListItem = GroceryItem & {
   quantity: number;
-}
+};
 
-// A separate card component so its hooks run consistently per item
-interface ShoppingListItemCardProps {
+// Changed from interface to type
+type ShoppingListItemCardProps = {
   item: ShoppingListItem;
   onClick: (item: ShoppingListItem) => void;
   updateQuantity: (id: string, change: number) => void;
-}
+};
+
 const ShoppingListItemCard = ({
   item,
   onClick,
@@ -80,9 +81,7 @@ const ShoppingListItemCard = ({
             <RemoveIcon />
           </IconButton>
           <Avatar sx={{ bgcolor: "primary.main", color: "white" }}>
-            {item.quantity}
-            {" "}
-            <span style={{ fontSize: 12 }}>{item.unit}</span>
+            {item.quantity} <span style={{ fontSize: 12 }}>{item.unit}</span>
           </Avatar>
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body1" fontWeight="medium" noWrap>
@@ -327,7 +326,8 @@ const ShoppingList = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            height: 200,
+            height: { xs: 150, md: 200 },
+            width: "100%",
           }}
         >
           <CircularProgress />
@@ -337,7 +337,7 @@ const ShoppingList = () => {
 
     if (!currentItem) {
       return (
-        <Box>
+        <Box sx={{ width: "100%", textAlign: "center", p: 2 }}>
           <Typography variant="h6" gutterBottom>
             No more items to suggest
           </Typography>
@@ -479,9 +479,13 @@ const ShoppingList = () => {
 
     return (
       <Stack spacing={2} sx={{ mt: 2, overflow: "auto" }}>
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: 10 }}>
-              Swipe left and right to update quantity
-            </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: 10 }}
+        >
+          Swipe left and right to update quantity
+        </Typography>
         {shoppingList.map((item) => (
           <ShoppingListItemCard
             key={item._id}
@@ -525,7 +529,6 @@ const ShoppingList = () => {
         }}
         onClick={() => setShowItemDetails(false)}
       >
-        
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -644,29 +647,42 @@ const ShoppingList = () => {
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}
-      spacing={2}
-      sx={{ width: "100%", height: "100%", p: 2 }}
-      overflow="auto"
+      spacing={{ xs: 1, md: 2 }}
+      sx={{
+        width: "100%",
+        height: "100%",
+        p: { xs: 1, md: 2 },
+        overflow: "auto",
+      }}
     >
       <LoadingOverlay loading={loadingPrevious || loadingShoppingList} />
-      <Grid container sx={{ width: "100%", height: "100%", overflow: "auto" }}>
+      <Grid
+        container
+        spacing={{ xs: 1, md: 2 }}
+        sx={{ width: "100%", height: "100%" }}
+      >
         <Grid
           size={{ xs: 12, md: 6 }}
           sx={{
-            maxHeight: { xs: "40%", md: "100%" },
+            height: { xs: "30vh", md: "auto" },
             p: 1,
             display: "flex",
             flexDirection: "column",
             justifyContent: "flex-start",
             alignItems: "center",
             width: "100%",
+            overflow: "hidden",
           }}
         >
-
           <Typography
             variant="h6"
-            sx={{ mb: 3, display: "flex", alignItems: "center", width: "100%" }}
-            >
+            sx={{
+              mb: { xs: 1, md: 3 },
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
             <AddShoppingCartIcon sx={{ mr: 1 }} />
             Previous Grocery Items
           </Typography>
@@ -683,25 +699,42 @@ const ShoppingList = () => {
           )}
         </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }} sx={{ height: "fit-content", p: 1 }}>
-          <Paper sx={{ p: 3, borderRadius: 2 }}>
+        <Grid
+          size={{ xs: 12, md: 6 }}
+          sx={{
+            height: { xs: "calc(70vh - 16px)", md: "100%" },
+            p: 1,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Paper
+            sx={{
+              p: { xs: 2, md: 3 },
+              borderRadius: 2,
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
             <Typography
               variant="h6"
-              sx={{ display: "flex", alignItems: "center" }}
+              sx={{ display: "flex", alignItems: "center", mb: 2 }}
             >
               <Badge
                 badgeContent={shoppingList.length}
                 color="primary"
-                sx={{ ml: 1 }}
+                sx={{ mr: 1 }}
               >
                 <ShoppingCartIcon sx={{ mr: 1 }} />
               </Badge>
               My Shopping List
             </Typography>
 
-            
-
-            {renderShoppingList()}
+            <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+              {renderShoppingList()}
+            </Box>
           </Paper>
         </Grid>
       </Grid>

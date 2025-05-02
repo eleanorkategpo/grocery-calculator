@@ -21,6 +21,7 @@ import { enqueueSnackbar } from "notistack";
 import { GroceryItem } from "../../constants/Schema";
 import EditItemModal from "./EditItemModal";
 import { PriorityHigh } from "@mui/icons-material";
+import { calculateTotal } from "../shared/SharedFunctions";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -75,11 +76,6 @@ const EditCart = () => {
     setIsEditModalOpen(false);
   };
 
-  const calculateTotal = () => {
-    return (userStore.groceryData?.items ?? [])
-      .filter((item): item is GroceryItem => Boolean(item))
-      .reduce((sum, item) => sum + (item.total || 0), 0);
-  };
 
   return (
     <>
@@ -189,7 +185,7 @@ const EditCart = () => {
 
           <Stack direction="row" justifyContent="flex-end" mt={2}>
             <Typography variant="h6">
-              Total: ₱{calculateTotal().toFixed(2)}
+              Total: ₱{calculateTotal(userStore.groceryData?.items ?? []).toFixed(2)}
             </Typography>
           </Stack>
         </Paper>

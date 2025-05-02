@@ -226,7 +226,7 @@ const PreviousCarts = () => {
                             {new Intl.NumberFormat("en-US", {
                               style: "currency",
                               currency: "PHP",
-                            }).format(cart.totalAmount)}
+                            }).format(cart.totalAmount ?? 0)}
                           </Typography>
                         </Stack>
                       </CardContent>

@@ -21,43 +21,39 @@ export const getTheme = (): ThemeOptions => {
       text: {
         primary: cssVar("--text-color"),
         secondary: cssVar("--text-secondary-color"),
-        
       },
-      
     },
     typography: {
       fontFamily: cssVar("--primary-font"),
       fontWeightBold: 700,
-      
     },
     components: {
       MuiButton: {
         styleOverrides: {
           root: {
             backgroundColor: cssVar("--primary-color"),
-            '&:disabled': {
+            "&:disabled": {
               backgroundColor: cssVar("--primary-color-light"),
             },
-            '&:hover': {
+            "&:hover": {
               backgroundColor: cssVar("--primary-color-dark"),
             },
-            '&.MuiButton-text': {
+            "&.MuiButton-text": {
               color: cssVar("--text-color"),
               backgroundColor: "transparent",
-              '&:hover': {
+              "&:hover": {
                 color: cssVar("--text-color-dark"),
               },
             },
           },
         },
       },
-  
       MuiTextField: {
         styleOverrides: {
           root: {
             backgroundColor: cssVar("--paper-background-color"),
-            boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
-            borderRadius: '4px',
+            boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
+            borderRadius: "4px",
             borderColor: cssVar("--primary-color"),
           },
         },
@@ -69,7 +65,6 @@ export const getTheme = (): ThemeOptions => {
           },
         },
       },
-      
     },
   };
 };

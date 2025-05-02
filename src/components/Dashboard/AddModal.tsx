@@ -16,7 +16,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import UserStore from "../../store/UserStore";
-import { Formik, Form } from "formik";
+import { Formik, Form, useField } from "formik";
 import * as Yup from "yup";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -24,13 +24,13 @@ import CloseIcon from "@mui/icons-material/Close";
 import CurrencyInput from "react-currency-input-field";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import axios from "axios";
-import { useRef, useState, useMemo, useEffect } from "react";
+import { useRef, useState, useMemo, useEffect, memo } from "react";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { enqueueSnackbar } from "notistack";
 import { useParams } from "react-router-dom";
 import { Save } from "@mui/icons-material";
 import debounce from "lodash/debounce";
-
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 const API_URL = import.meta.env.VITE_API_URL;
 const BoxStyled = styled(Box)(() => ({
   backgroundColor: "white",
@@ -50,38 +50,105 @@ const BoxStyled = styled(Box)(() => ({
   overflowY: "auto",
 }));
 
+// Reusable description autocomplete with detail autofill
+const DescriptionAutocompleteField = memo(
+  ({
+    name,
+    label,
+    setFieldValue,
+  }: {
+    name: string;
+    label: string;
+    setFieldValue: (field: string, value: any) => void;
+  }) => {
+    const [field, meta, helpers] = useField<string>(name);
+    const { value, onBlur } = field;
+    const { setValue } = helpers;
+    const error = meta.touched && meta.error ? meta.error : "";
+    const [inputValue, setInputValue] = useState<string>(value || "");
+    // now storing full item objects
+    const [options, setOptions] = useState<any[]>([]);
+    const debouncedFetchLocal = useMemo(
+      () =>
+        debounce(async (input: string) => {
+          if (input.length > 1) {
+            try {
+              const resp = await axios.get(
+                `${API_URL}/grocery/autofill/${encodeURIComponent(input)}`
+              );
+              // get full groceryItems from backend
+              const items = resp.data.data.groceryItems;
+              setOptions(items);
+            } catch (err) {
+              console.error("Autocomplete fetch error:", err);
+            }
+          } else {
+            setOptions([]);
+          }
+        }, 300),
+      []
+    );
+    useEffect(() => () => debouncedFetchLocal.cancel(), [debouncedFetchLocal]);
+    useEffect(() => {
+      debouncedFetchLocal(inputValue);
+    }, [inputValue, debouncedFetchLocal]);
+    return (
+      <Stack direction="column" spacing={1}>
+        <Autocomplete
+          freeSolo
+          fullWidth
+          options={Array.isArray(options) ? options : []}
+          getOptionLabel={(option) =>
+            typeof option === "string" ? option : option.description || ""
+          }
+          value={value}
+          inputValue={inputValue}
+          onInputChange={(_e, newValue) => setInputValue(newValue)}
+          onChange={(_e, newValue) => {
+            let desc = "";
+            // if selecting an existing item object, autofill details
+            if (newValue && typeof newValue === "object") {
+              desc = newValue.description;
+              setFieldValue("barcode", newValue.barcode);
+              setFieldValue("price", newValue.price.toString());
+              setFieldValue("quantity", newValue.quantity);
+              setFieldValue("unit", newValue.unit);
+            } else if (typeof newValue === "string") {
+              desc = newValue;
+            }
+            setValue(desc);
+            setInputValue(desc);
+          }}
+          blurOnSelect
+          selectOnFocus
+          clearOnBlur={false}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              name={name}
+              label={label}
+              variant="outlined"
+              margin="normal"
+              onBlur={(e) => {
+                onBlur(e);
+                setValue(inputValue);
+              }}
+              error={Boolean(error)}
+              helperText={error}
+            />
+          )}
+        />
+      </Stack>
+    );
+  }
+);
+
 const AddModal = () => {
   const userStore = UserStore();
   const priceInputRef = useRef<HTMLInputElement>(null);
   const { groceryId } = useParams();
   const [loading, setLoading] = useState(false);
   const isEditMode = Boolean(userStore.editItem);
-
-  // NEW: local state to hold autocomplete options
-  const [descriptionOptions, setDescriptionOptions] = useState<string[]>([]);
-
-  // 1) Create one debounced fetch function
-  const debouncedFetch = useMemo(
-    () =>
-      debounce(async (input: string) => {
-        try {
-          const { data } = await axios.get<string[]>(
-            `${API_URL}/grocery/autofill/${encodeURIComponent(input)}`
-          );
-          setDescriptionOptions(data);
-        } catch (err) {
-          console.error("Autocomplete fetch error:", err);
-        }
-      }, 300),
-    []
-  );
-
-  // 2) Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      debouncedFetch.cancel();
-    };
-  }, [debouncedFetch]);
 
   // Validation schema using Yup
   const validationSchema = Yup.object().shape({
@@ -103,7 +170,8 @@ const AddModal = () => {
   const randomizeBarcode = (
     setFieldValue?: (field: string, value: any) => void
   ) => {
-    const value = "BARCODE-" + Math.random().toString(36).substring(2, 6);
+    // generate a 6-digit numeric-only code
+    const value = Math.random().toString().slice(2, 8);
     if (setFieldValue) {
       setFieldValue("barcode", value);
     } else {
@@ -263,30 +331,18 @@ const AddModal = () => {
             isValid,
           }) => (
             <Form>
-              <Stack direction="column" spacing={2} sx={{ pt: 4 }}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <InputLabel>Barcode</InputLabel>
-                  <Tooltip title="Randomize Barcode">
-                    <IconButton
-                      onClick={() => randomizeBarcode(setFieldValue)}
-                      sx={{
-                        backgroundColor: "var(--primary-color)",
-                        color: "white",
-                        borderRadius: 10,
-                        padding: 1,
-                      }}
-                    >
-                      <ShuffleIcon sx={{ fontSize: 20 }} />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                pt={6}
+                spacing={2}
+                gap={2}
+              >
                 <TextField
                   name="barcode"
                   variant="outlined"
+                  label="Barcode"
                   fullWidth
                   margin="normal"
                   onChange={(e) =>
@@ -298,179 +354,158 @@ const AddModal = () => {
                   helperText={touched.barcode && errors.barcode}
                   inputProps={{ style: { textTransform: "uppercase" } }}
                 />
-                <InputLabel>Item Description</InputLabel>
-
-                <Autocomplete
-                  freeSolo
-                  fullWidth
-                  options={descriptionOptions}
-                  value={values.description}
-                  inputValue={values.description}
-                  onInputChange={(_e, newValue) => {
-                    // Directly update the field value without triggering a full re-render
-                    if (newValue !== values.description) {
-                      // Capitalize first letter of each word
-                      const capitalized = newValue.replace(
-                        /\b\w/g,
-                        (ch) => ch.toUpperCase()
-                      );
-                      
-                      // Update the field value
-                      setFieldValue("description", capitalized, false); // false = don't validate yet
-                      
-                      // Trigger the debounced search
-                      if (newValue.length > 1) {
-                        debouncedFetch(newValue);
-                      } else {
-                        setDescriptionOptions([]);
-                      }
-                    }
-                  }}
-                  filterOptions={(x) => x}
-                  blurOnSelect
-                  selectOnFocus
-                  clearOnBlur={false}
-                  onChange={(_e, value) => {
-                    if (typeof value === 'string') {
-                      setFieldValue("description", value || "");
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="description"
-                      label="Item Description"
-                      variant="outlined"
-                      margin="normal"
-                      onBlur={handleBlur}
-                      error={touched.description && Boolean(errors.description)}
-                      helperText={touched.description && errors.description}
-                    />
-                  )}
-                />
-                <InputLabel>Price</InputLabel>
-                <CurrencyInput
-                  name="price"
-                  decimalScale={2}
-                  onValueChange={(value) => {
-                    setFieldValue("price", value);
-                  }}
-                  className="number-font"
-                  onBlur={handleBlur}
-                  value={values.price}
-                  prefix="₱ "
-                  style={{
-                    width: "100%",
-                    margin: "normal",
-                    height: 50,
-                    borderRadius: 10,
-                    border: "none",
-                    boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
-                    fontSize: 20,
-                    fontWeight: 600,
-                    color: "var(--neon-green)",
-                    padding: "0 10px",
-                    background: "black",
-                  }}
-                  onFocus={() => {
-                    if (priceInputRef.current) {
-                      priceInputRef.current.select();
-                    }
-                  }}
-                  ref={priceInputRef}
-                />
-                <InputLabel>Quantity</InputLabel>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="center"
-                  spacing={1}
-                  marginY={2}
-                >
+                <Tooltip title="Randomize Barcode">
                   <IconButton
-                    color="primary"
-                    onClick={() => {
-                      if (values.quantity > 1) {
-                        setFieldValue("quantity", values.quantity - 1);
-                      }
+                    onClick={() => randomizeBarcode(setFieldValue)}
+                    sx={{
+                      backgroundColor: "var(--primary-color)",
+                      color: "white",
+                      borderRadius: 10,
+                      padding: 1,
                     }}
                   >
-                    <RemoveIcon />
+                    <ShuffleIcon sx={{ fontSize: 20 }} />
                   </IconButton>
-                  <TextField
-                    name="quantity"
-                    type="number"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
+                </Tooltip>
+              </Stack>
+
+              {/* Description + autofill details */}
+              <DescriptionAutocompleteField
+                name="description"
+                label="Item Description"
+                setFieldValue={setFieldValue}
+              />
+              <CurrencyInput
+                name="price"
+                decimalScale={2}
+                onValueChange={(value) => {
+                  setFieldValue("price", value);
+                }}
+                className="number-font"
+                onBlur={handleBlur}
+                value={values.price}
+                prefix="₱ "
+                style={{
+                  width: "100%",
+                  margin: "normal",
+                  height: 50,
+                  borderRadius: 10,
+                  border: "none",
+                  boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
+                  fontSize: 20,
+                  fontWeight: 600,
+                  color: "var(--neon-green)",
+                  padding: "0 10px",
+                  background: "black",
+                }}
+                onFocus={() => {
+                  if (priceInputRef.current) {
+                    priceInputRef.current.select();
+                  }
+                }}
+                ref={priceInputRef}
+              />
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="center"
+                spacing={1}
+                marginY={2}
+              >
+                <IconButton
+                  color="primary"
+                  onClick={() => {
+                    if (values.quantity > 1) {
+                      setFieldValue("quantity", values.quantity - 1);
+                    }
+                  }}
+                >
+                  <RemoveIcon />
+                </IconButton>
+                <TextField
+                  name="quantity"
+                  type="number"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.quantity}
+                  error={touched.quantity && Boolean(errors.quantity)}
+                  helperText={touched.quantity && errors.quantity}
+                  inputProps={{ min: 1 }}
+                  sx={{
+                    flex: 1,
+                    minWidth: { xs: 100, md: 150 },
+                    input: { textAlign: "center" },
+                  }}
+                />
+                <IconButton
+                  color="primary"
+                  onClick={() => {
+                    setFieldValue("quantity", values.quantity + 1);
+                  }}
+                >
+                  <AddIcon />
+                </IconButton>
+                <FormControl variant="outlined" fullWidth margin="normal">
+                  <Select
+                    labelId="unit-label"
+                    label="Unit"
+                    name="unit"
+                    value={values.unit}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    value={values.quantity}
-                    error={touched.quantity && Boolean(errors.quantity)}
-                    helperText={touched.quantity && errors.quantity}
-                    inputProps={{ min: 1 }}
+                    error={touched.unit && Boolean(errors.unit)}
+                    variant="filled"
                     sx={{
-                      flex: 1,
-                      minWidth: { xs: 100, md: 150 },
-                      input: { textAlign: "center" },
-                    }}
-                  />
-                  <IconButton
-                    color="primary"
-                    onClick={() => {
-                      setFieldValue("quantity", values.quantity + 1);
+                      backgroundColor: "var(--paper-background-color)",
+                      boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
+                      ".MuiSelect-select": {
+                        padding: 2,
+                      },
+                      ".MuiSvgIcon-root": {
+                        color: "var(--primary-color)",
+                      },
                     }}
                   >
-                    <AddIcon />
-                  </IconButton>
-                  <FormControl variant="outlined" fullWidth margin="normal">
-                    <InputLabel id="unit-label">Unit</InputLabel>
-                    <Select
-                      labelId="unit-label"
-                      name="unit"
-                      value={values.unit}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.unit && Boolean(errors.unit)}
-                      variant="filled"
-                    >
-                      <MenuItem value="kg">kg</MenuItem>
-                      <MenuItem value="pc">pc</MenuItem>
-                      <MenuItem value="g">g</MenuItem>
-                      <MenuItem value="lb">lb</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Stack>
-                <Divider sx={{ backgroundColor: "var(--secondary-color)" }} />
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+                    <MenuItem value="kg">kg</MenuItem>
+                    <MenuItem value="pc">pc</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+              <Divider sx={{ backgroundColor: "var(--secondary-color)" }} />
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                pt={2}
+              >
+                <Box>
+                  <Typography variant="subtitle2" color="var(--text-color)">
+                    Total Price
+                  </Typography>
+                  <Typography variant="h4" color="var(--text-color)">
+                    {" "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "PHP",
+                    }).format(Number(values.price) * Number(values.quantity))}
+                  </Typography>
+                </Box>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={!isValid || loading}
+                  color="primary"
+                  size="large"
+                  sx={{
+                    borderRadius: 10,
+                    padding: 2,
+                  }}
                 >
-                  <Box>
-                    <InputLabel>Total Price</InputLabel>
-                    <Typography variant="h4">
-                      {" "}
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "PHP",
-                      }).format(Number(values.price) * Number(values.quantity))}
-                    </Typography>
-                  </Box>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={!isValid || loading}
-                    color="primary"
-                    size="large"
-                    sx={{
-                      borderRadius: 10,
-                      padding: 2,
-                    }}
-                  >
-                    {isEditMode ? <Save /> : <AddShoppingCartIcon />}
-                  </Button>
-                </Stack>
+                  {isEditMode ? <Save /> : <AddShoppingCartIcon />}
+                </Button>
               </Stack>
             </Form>
           )}

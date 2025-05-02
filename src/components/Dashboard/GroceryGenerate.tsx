@@ -9,9 +9,7 @@ import {
   FormControlLabel,
   Fade,
   Grow,
-  Divider,
-  CircularProgress,
-  Box,
+  Divider
 } from "@mui/material";
 import CurrencyInput from "react-currency-input-field";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -20,10 +18,6 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../shared/LoadingOverlay";
-const API_URL = import.meta.env.VITE_API_URL;
-
-const GroceryGenerate = () => {
-  const navigate = useNavigate();
   const [groceryStore, setGroceryStore] = useState("");
   const [budget, setBudget] = useState("");
   const [currentDateTime, setCurrentDateTime] = useState("");

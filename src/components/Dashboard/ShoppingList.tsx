@@ -20,7 +20,7 @@ import {
 } from "framer-motion";
 import { useSwipeable } from "react-swipeable";
 import axios from "axios";
-import Swal, { SweetAlertResult } from "sweetalert2";
+import { SweetAlertResult } from "sweetalert2";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import RemoveShoppingCartIcon from "@mui/icons-material/RemoveShoppingCart";
 import AddIcon from "@mui/icons-material/Add";

@@ -6,14 +6,12 @@ import {
   Typography,
   Button,
   Modal,
-  IconButton,
-  InputLabel,
-  Tooltip,
+  IconButton, Tooltip,
   MenuItem,
   Select,
   FormControl,
   Divider,
-  Autocomplete,
+  Autocomplete
 } from "@mui/material";
 import UserStore from "../../store/UserStore";
 import { Formik, Form, useField } from "formik";
@@ -30,7 +28,6 @@ import { enqueueSnackbar } from "notistack";
 import { useParams } from "react-router-dom";
 import { Save } from "@mui/icons-material";
 import debounce from "lodash/debounce";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 const API_URL = import.meta.env.VITE_API_URL;
 const BoxStyled = styled(Box)(() => ({
   backgroundColor: "white",

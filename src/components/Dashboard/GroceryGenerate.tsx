@@ -9,9 +9,7 @@ import {
   FormControlLabel,
   Fade,
   Grow,
-  Divider,
-  CircularProgress,
-  Box,
+  Divider
 } from "@mui/material";
 import CurrencyInput from "react-currency-input-field";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";

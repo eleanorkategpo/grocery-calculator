@@ -63,7 +63,7 @@ const MyCart = () => {
           <Typography variant="body1" color="black" my={1}>
             Items
           </Typography>
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row">
             <EditCart />
             {!userStore.groceryData?.checkoutDate && <DeleteCart />}
           </Stack>

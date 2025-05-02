@@ -5,10 +5,12 @@ import UserStore from "../../store/UserStore";
 import { enqueueSnackbar } from "notistack";
 import { SweetAlertResult } from "sweetalert2";
 import { SwalComponent } from "../shared/SwalComponent";
+import { useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const DeleteCart = () => {
   const userStore = UserStore();
+  const navigate = useNavigate();
   const handleDeleteCart = () => {
     SwalComponent.fire({
       title: "Are you sure?",
@@ -21,6 +23,7 @@ const DeleteCart = () => {
         enqueueSnackbar("Cart deleted successfully", {
           variant: "success",
         });
+        navigate("/dashboard/previous-carts");
       }
     });
   };

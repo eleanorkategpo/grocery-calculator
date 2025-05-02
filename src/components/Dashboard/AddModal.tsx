@@ -13,6 +13,7 @@ import {
   Select,
   FormControl,
   Divider,
+  Autocomplete,
 } from "@mui/material";
 import UserStore from "../../store/UserStore";
 import { Formik, Form } from "formik";
@@ -23,11 +24,12 @@ import CloseIcon from "@mui/icons-material/Close";
 import CurrencyInput from "react-currency-input-field";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import axios from "axios";
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { enqueueSnackbar } from "notistack";
 import { useParams } from "react-router-dom";
 import { Save } from "@mui/icons-material";
+import debounce from "lodash/debounce";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const BoxStyled = styled(Box)(() => ({
@@ -54,6 +56,32 @@ const AddModal = () => {
   const { groceryId } = useParams();
   const [loading, setLoading] = useState(false);
   const isEditMode = Boolean(userStore.editItem);
+
+  // NEW: local state to hold autocomplete options
+  const [descriptionOptions, setDescriptionOptions] = useState<string[]>([]);
+
+  // 1) Create one debounced fetch function
+  const debouncedFetch = useMemo(
+    () =>
+      debounce(async (input: string) => {
+        try {
+          const { data } = await axios.get<string[]>(
+            `${API_URL}/grocery/autofill/${encodeURIComponent(input)}`
+          );
+          setDescriptionOptions(data);
+        } catch (err) {
+          console.error("Autocomplete fetch error:", err);
+        }
+      }, 300),
+    []
+  );
+
+  // 2) Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      debouncedFetch.cancel();
+    };
+  }, [debouncedFetch]);
 
   // Validation schema using Yup
   const validationSchema = Yup.object().shape({
@@ -272,21 +300,53 @@ const AddModal = () => {
                 />
                 <InputLabel>Item Description</InputLabel>
 
-                <TextField
-                  name="description"
-                  variant="outlined"
+                <Autocomplete
+                  freeSolo
                   fullWidth
-                  margin="normal"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    // capitalize first letter of each word
-                    const raw = e.target.value;
-                    const capitalized = raw.replace(/\b\w/g, (char) => char.toUpperCase());
-                    setFieldValue("description", capitalized);
-                  }}
-                  onBlur={handleBlur}
+                  options={descriptionOptions}
                   value={values.description}
-                  error={touched.description && Boolean(errors.description)}
-                  helperText={touched.description && errors.description}
+                  inputValue={values.description}
+                  onInputChange={(_e, newValue) => {
+                    // Directly update the field value without triggering a full re-render
+                    if (newValue !== values.description) {
+                      // Capitalize first letter of each word
+                      const capitalized = newValue.replace(
+                        /\b\w/g,
+                        (ch) => ch.toUpperCase()
+                      );
+                      
+                      // Update the field value
+                      setFieldValue("description", capitalized, false); // false = don't validate yet
+                      
+                      // Trigger the debounced search
+                      if (newValue.length > 1) {
+                        debouncedFetch(newValue);
+                      } else {
+                        setDescriptionOptions([]);
+                      }
+                    }
+                  }}
+                  filterOptions={(x) => x}
+                  blurOnSelect
+                  selectOnFocus
+                  clearOnBlur={false}
+                  onChange={(_e, value) => {
+                    if (typeof value === 'string') {
+                      setFieldValue("description", value || "");
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="description"
+                      label="Item Description"
+                      variant="outlined"
+                      margin="normal"
+                      onBlur={handleBlur}
+                      error={touched.description && Boolean(errors.description)}
+                      helperText={touched.description && errors.description}
+                    />
+                  )}
                 />
                 <InputLabel>Price</InputLabel>
                 <CurrencyInput

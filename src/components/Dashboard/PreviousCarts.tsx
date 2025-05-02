@@ -4,10 +4,11 @@ import {
   Card,
   CardContent,
   Typography,
-  CircularProgress, Stack,
+  CircularProgress,
+  Stack,
   Slide,
   IconButton,
-  Divider
+  Divider,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import axios from "axios";
@@ -159,11 +160,16 @@ const PreviousCarts = () => {
             sx={{ maxWidth: "500px", margin: "0 auto" }}
           >
             {previousCarts.length === 0 ? (
-              <Typography variant="h6" color="white" sx={{textAlign: "center", width: "100%"}}>
+              <Typography
+                variant="h6"
+                color="white"
+                sx={{ textAlign: "center", width: "100%" }}
+              >
                 No previous carts found
               </Typography>
             ) : (
-              previousCarts.map((cart, index) => (
+              previousCarts.map((cart, index) => {
+                return (
                 <Grid key={cart._id} size={{ xs: 12 }}>
                   <Slide
                     direction="up"
@@ -189,12 +195,18 @@ const PreviousCarts = () => {
                           Created on:{" "}
                           {dayjs(cart.createdAt).format("DD/MM/YYYY hh:mm A")}
                         </Typography>
-                        <Typography variant="body2">
-                          ✓ Checked out on:{" "}
-                          {dayjs(cart.checkoutDate).format(
-                            "DD/MM/YYYY hh:mm A"
-                          )}
-                        </Typography>
+                        {cart.checkoutDate ? (
+                          <Typography variant="body2">
+                            ✓ Checked out on:{" "}
+                            {dayjs(cart.checkoutDate).format(
+                              "DD/MM/YYYY hh:mm A"
+                            )}
+                          </Typography>
+                        ) : (
+                          <Typography variant="body2" color="warning">
+                            PENDING CHECKOUT
+                          </Typography>
+                        )}
                         <Divider
                           sx={{
                             my: 1,
@@ -221,7 +233,7 @@ const PreviousCarts = () => {
                     </Card>
                   </Slide>
                 </Grid>
-              ))
+              )})
             )}
           </Grid>
         )}

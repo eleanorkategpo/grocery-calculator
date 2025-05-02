@@ -13,11 +13,12 @@ import { useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import LoadingOverlay from "./shared/LoadingOverlay";
 import axios from "axios";
-import Swal from "sweetalert2";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import { ShoppingBag } from "@mui/icons-material";
+import { SwalComponent } from "./shared/SwalComponent";
+import { SweetAlertResult } from "sweetalert2";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const Dashboard = () => {
@@ -51,13 +52,12 @@ const Dashboard = () => {
   const handleLogout = () => {
     setAnchorEl(null);
     setLoading(true);
-    Swal.fire({
+    SwalComponent.fire({
       title: "Are you sure?",
       text: "You want to logout?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-    }).then((result) => {
+    }).then((result: SweetAlertResult) => {
       if (result.isConfirmed) {
         axios
           .get(`${API_URL}/auth/logout`)

@@ -9,6 +9,7 @@ import Footer from "./Footer";
 import EditCart from "./EditCart";
 import LoadingOverlay from "../shared/LoadingOverlay";
 import { PriorityHigh } from "@mui/icons-material";
+import DeleteCart from "./DeleteCart";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const MyCart = () => {
@@ -62,7 +63,10 @@ const MyCart = () => {
           <Typography variant="body1" color="black" my={1}>
             Items
           </Typography>
-          <EditCart />
+          <Stack direction="row" spacing={2}>
+            <EditCart />
+            {!userStore.groceryData?.checkoutDate && <DeleteCart />}
+          </Stack>
         </Stack>
 
         <Typography variant="subtitle2" color="black">

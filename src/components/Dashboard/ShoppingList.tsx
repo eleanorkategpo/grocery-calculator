@@ -20,7 +20,7 @@ import {
 } from "framer-motion";
 import { useSwipeable } from "react-swipeable";
 import axios from "axios";
-import Swal from "sweetalert2";
+import Swal, { SweetAlertResult } from "sweetalert2";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import RemoveShoppingCartIcon from "@mui/icons-material/RemoveShoppingCart";
 import AddIcon from "@mui/icons-material/Add";
@@ -30,6 +30,7 @@ import { GroceryItem } from "../../constants/Schema";
 import CloseIcon from "@mui/icons-material/Close";
 import { DoNotTouch } from "@mui/icons-material";
 import LoadingOverlay from "../shared/LoadingOverlay";
+import { SwalComponent } from "../shared/SwalComponent";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -238,15 +239,13 @@ const ShoppingList = () => {
 
       if (newQuantity <= 0) {
         // Confirm before removing
-        Swal.fire({
+        SwalComponent.fire({
           title: "Remove item?",
           text: `Remove ${updatedList[existingItemIndex].description} from your shopping list?`,
           icon: "warning",
           showCancelButton: true,
-          confirmButtonColor: "var(--error-color)",
-          cancelButtonColor: "var(--secondary-color)",
           confirmButtonText: "Yes, remove it!",
-        }).then(async (result) => {
+        }).then(async (result: SweetAlertResult) => {
           if (result.isConfirmed) {
             await axios.delete(`${API_URL}/shopping-list/remove/${itemId}`);
             setShoppingList(shoppingList.filter((item) => item._id !== itemId));
@@ -607,15 +606,13 @@ const ShoppingList = () => {
                 onClick={() => {
                   setShowItemDetails(false);
                   // Show confirmation before deleting
-                  Swal.fire({
+                  SwalComponent.fire({
                     title: "Remove item?",
                     text: `Remove ${selectedItem.description} from your shopping list?`,
                     icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: "var(--error-color)",
-                    cancelButtonColor: "var(--secondary-color)",
                     confirmButtonText: "Yes, remove it!",
-                  }).then(async (result) => {
+                  }).then(async (result: SweetAlertResult) => {
                     if (result.isConfirmed) {
                       await axios.delete(
                         `${API_URL}/shopping-list/remove/${selectedItem._id}`

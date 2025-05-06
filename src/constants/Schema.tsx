@@ -24,7 +24,6 @@ export type GroceryItem = {
   groceryId: string;
 };
 
-
 export type Grocery = {
   _id?: string;
   storeName: string;
@@ -38,3 +37,4 @@ export type Grocery = {
   items: GroceryItem[];
 };
 
+export type ShoppingListItems = GroceryItem & { checked: boolean };

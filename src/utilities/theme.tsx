@@ -21,6 +21,7 @@ export const getTheme = (): ThemeOptions => {
       text: {
         primary: cssVar("--text-color"),
         secondary: cssVar("--text-secondary-color"),
+        disabled: cssVar("--text-disabled-color"),
       },
     },
     typography: {

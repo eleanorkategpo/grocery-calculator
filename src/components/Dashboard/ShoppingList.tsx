@@ -28,9 +28,14 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { GroceryItem } from "../../constants/Schema";
 import CloseIcon from "@mui/icons-material/Close";
-import { DoNotTouch } from "@mui/icons-material";
+import { DeleteForever, DoNotTouch } from "@mui/icons-material";
 import LoadingOverlay from "../shared/LoadingOverlay";
 import { SwalComponent } from "../shared/SwalComponent";
+import UserStore from "../../store/UserStore";
+import SwipeLeftIcon from "@mui/icons-material/SwipeLeft";
+import SwipeRightIcon from "@mui/icons-material/SwipeRight";
+import TouchAppIcon from "@mui/icons-material/TouchApp";
+import SwipeIcon from "@mui/icons-material/Swipe";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -82,10 +87,11 @@ const ShoppingListItemCard = ({
             <RemoveIcon />
           </IconButton>
           <Avatar sx={{ bgcolor: "primary.main", color: "white" }}>
-            {item.quantity} <span style={{ fontSize: 12 }}>{item.unit}</span>
+            {item.quantity ?? 1}{" "}
+            <span style={{ fontSize: 12 }}>{item.unit}</span>
           </Avatar>
           <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="body1" fontWeight="medium" noWrap>
+            <Typography variant="body1" fontWeight="medium">
               {item.description}
             </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>
@@ -121,6 +127,10 @@ const suggestionMessages: string[] = [
 ];
 
 const ShoppingList = () => {
+  const userStore = UserStore();
+  const showInstructions = userStore.showInstructions;
+  const setShowInstructions = userStore.setShowInstructions;
+
   // State for previous items to consider adding
   const [previousItems, setPreviousItems] = useState<GroceryItem[]>([]);
   // Randomized suggestion prompt
@@ -146,8 +156,8 @@ const ShoppingList = () => {
   >("none");
   const [isHolding, setIsHolding] = useState(false);
   const xPosition = useMotionValue(0);
-  const deleteIconOpacity = useTransform(xPosition, [-150, -50], [1, 0]);
-  const cartIconOpacity = useTransform(xPosition, [50, 150], [0, 1]);
+  const deleteIconOpacity = useTransform(xPosition, [-150, -1], [1, 0]);
+  const cartIconOpacity = useTransform(xPosition, [1, 150], [0, 1]);
   const cardRotation = useTransform(xPosition, [-200, 0, 200], [-10, 0, 10]);
   const cardScale = useTransform(
     xPosition,
@@ -196,7 +206,7 @@ const ShoppingList = () => {
     try {
       setLoadingShoppingList(true);
       const response = await axios.get(`${API_URL}/shopping-list`);
-      setShoppingList(response.data.data.items);
+      setShoppingList(response.data.data.items ?? []);
     } catch (error) {
       console.error("Error fetching shopping list:", error);
     } finally {
@@ -255,8 +265,8 @@ const ShoppingList = () => {
         // Update quantity
         updatedList[existingItemIndex].quantity = newQuantity;
         setShoppingList(updatedList);
-        await axios.patch(`${API_URL}/shopping-list/update/`, {
-          items: updatedList,
+        await axios.patch(`${API_URL}/shopping-list/update-item/${itemId}`, {
+          quantity: newQuantity,
         });
       }
     } catch (error) {
@@ -302,12 +312,17 @@ const ShoppingList = () => {
       xPosition.set(e.deltaX);
       if (Math.abs(e.deltaX) > 20) {
         setIsHolding(true);
+        // Prevent scrolling when swiping
+        document.body.style.overflow = "hidden";
       }
     },
     onSwiped: () => {
       setIsHolding(false);
+      // Re-enable scrolling after swipe is complete
+      document.body.style.overflow = "";
     },
     trackMouse: true,
+    preventScrollOnSwipe: true, // Add this to prevent scrolling during swipe
   });
 
   // Handle item click to show details
@@ -348,7 +363,7 @@ const ShoppingList = () => {
     }
 
     return (
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         <motion.div
           key={currentItem._id}
           initial={{ x: 0, opacity: 1 }}
@@ -360,10 +375,24 @@ const ShoppingList = () => {
                 ? 300
                 : 0,
             opacity: swipeDirection === "none" ? 1 : 0,
-            y: swipeDirection === "right" ? -100 : 0,
-            scale: swipeDirection === "right" ? 0.5 : 1,
+            rotate:
+              swipeDirection === "none"
+                ? 0
+                : swipeDirection === "left"
+                ? -10
+                : 10,
+            scale: swipeDirection === "none" ? 1 : 0.8,
           }}
-          exit={{ x: swipeDirection === "left" ? -300 : 300, opacity: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 100,
+            damping: 15,
+          }}
+          exit={{
+            x: swipeDirection === "left" ? -500 : 500,
+            opacity: 0,
+            transition: { duration: 0.3 },
+          }}
           style={{
             x: xPosition,
             rotate: cardRotation,
@@ -411,7 +440,7 @@ const ShoppingList = () => {
                 <ShoppingCartIcon
                   sx={{
                     fontSize: 100,
-                    color: "var(--primary-color)",
+                    color: "var(--success-color)",
                   }}
                 />
               </Box>
@@ -475,16 +504,23 @@ const ShoppingList = () => {
         </Typography>
       );
     }
+    const handleClearList = () => {
+      axios.delete(`${API_URL}/shopping-list/clear`);
+      setShoppingList([]);
+    };
 
     return (
-      <Stack spacing={2} sx={{ mt: 2, overflow: "auto" }}>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ fontSize: 10 }}
-        >
-          Swipe left and right to update quantity
-        </Typography>
+      <Stack spacing={2} sx={{ overflow: "auto" }}>
+        {shoppingList.length > 0 && (
+          <Button
+            variant="contained"
+            sx={{ color: "white", bgcolor: "var(--error-color)" }}
+            onClick={handleClearList}
+          >
+            <DeleteForever sx={{ mr: 1, color: "white" }} />
+            Clear List
+          </Button>
+        )}
         {shoppingList.map((item) => (
           <ShoppingListItemCard
             key={item._id}
@@ -501,7 +537,10 @@ const ShoppingList = () => {
         >
           Estimated Total: ₱
           {shoppingList
-            .reduce((acc, item) => acc + item.price * item.quantity, 0)
+            .reduce(
+              (acc, item) => acc + (item.price ?? 0) * (item.quantity ?? 1),
+              0
+            )
             .toFixed(2)}
         </Typography>
       </Stack>
@@ -640,105 +679,197 @@ const ShoppingList = () => {
     );
   };
 
-  // Main render
-  return (
-    <Stack
-      direction={{ xs: "column", md: "row" }}
-      spacing={{ xs: 1, md: 2 }}
-      sx={{
-        width: "100%",
-        height: "100%",
-        p: { xs: 1, md: 2 },
-        overflow: "auto",
-      }}
-    >
-      <LoadingOverlay loading={loadingPrevious || loadingShoppingList} />
-      <Grid
-        container
-        spacing={{ xs: 1, md: 2 }}
-        sx={{ width: "100%", height: "100%" }}
+  const Instructions = () => {
+    return (
+      <Stack
+        sx={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 2000,
+          bgcolor: "rgba(0, 0, 0, 0.85)",
+          p: { xs: 2, sm: 4 },
+        }}
+        alignItems="center"
+        justifyContent="center"
+        gap={3}
+        onClick={() => setShowInstructions(false)}
       >
-        <Grid
-          size={{ xs: 12, md: 6 }}
+        <Paper
+          elevation={6}
           sx={{
-            height: { xs: "30vh", md: "auto" },
-            p: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-start",
-            alignItems: "center",
+            maxWidth: 500,
             width: "100%",
-            overflow: "hidden",
+            p: { xs: 3, sm: 4 },
+            borderRadius: 2,
+            bgcolor: "background.paper",
           }}
         >
           <Typography
-            variant="h6"
-            sx={{
-              mb: { xs: 1, md: 3 },
-              display: "flex",
-              alignItems: "center",
-              width: "100%",
-            }}
+            variant="h5"
+            color="primary"
+            gutterBottom
+            align="center"
+            sx={{ mb: 3 }}
           >
-            <AddShoppingCartIcon sx={{ mr: 1 }} />
-            Previous Grocery Items
+            How to Use Your Shopping List
           </Typography>
 
-          {renderSuggestionCard()}
-          {currentItem && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontSize: 10 }}
-            >
-              Swipe left to skip, right to add to your shopping list
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              When Adding Items:
             </Typography>
-          )}
-        </Grid>
+            <Stack spacing={2}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <SwipeLeftIcon color="error" />
+                <Typography variant="body1">
+                  Swipe LEFT to SKIP an item
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <SwipeRightIcon color="success" />
+                <Typography variant="body1">
+                  Swipe RIGHT to ADD to your list
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <TouchAppIcon color="info" />
+                <Typography variant="body1">
+                  TAP an item to view details
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
 
+          <Box>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              In Your Shopping List:
+            </Typography>
+            <Stack spacing={2}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <SwipeIcon color="primary" />
+                <Typography variant="body1">
+                  Swipe LEFT or RIGHT to adjust quantity
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+
+          <Box sx={{ mt: 4, textAlign: "center" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowInstructions(false);
+              }}
+            >
+              Got it!
+            </Button>
+          </Box>
+        </Paper>
+      </Stack>
+    );
+  };
+
+  // Main render
+  return (
+    <>
+      {/* Instructions Overlay */}
+      {showInstructions && <Instructions />}
+
+      {/* Underlying Dashboard */}
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={{ xs: 1, md: 2 }}
+        sx={{
+          width: "100%",
+          height: "100%",
+          p: { xs: 1, md: 2 },
+          overflow: "auto",
+        }}
+      >
+        <LoadingOverlay loading={loadingPrevious || loadingShoppingList} />
         <Grid
-          size={{ xs: 12, md: 6 }}
-          sx={{
-            height: { xs: "calc(70vh - 16px)", md: "100%" },
-            p: 1,
-            display: "flex",
-            flexDirection: "column",
-          }}
+          container
+          spacing={{ xs: 1, md: 2 }}
+          sx={{ width: "100%", height: "100%" }}
         >
-          <Paper
+          <Grid
+            size={{ xs: 12, md: 6 }}
             sx={{
-              p: { xs: 2, md: 3 },
-              borderRadius: 2,
-              minHeight: "350px",
-              height: "fit-content",
+              minHeight: { xs: "180px", md: "auto" },
+              p: 1,
               display: "flex",
               flexDirection: "column",
+              justifyContent: "flex-start",
+              alignItems: "center",
+              width: "100%",
               overflow: "hidden",
             }}
           >
             <Typography
               variant="h6"
-              sx={{ display: "flex", alignItems: "center", mb: 2 }}
+              sx={{
+                mb: { xs: 1, md: 3 },
+                display: "flex",
+                alignItems: "center",
+                width: "100%",
+              }}
             >
-              <Badge
-                badgeContent={shoppingList.length}
-                color="primary"
-                sx={{ mr: 1 }}
-              >
-                <ShoppingCartIcon sx={{ mr: 1 }} />
-              </Badge>
-              My Shopping List
+              <AddShoppingCartIcon sx={{ mr: 1 }} />
+              Previous Grocery Items
             </Typography>
 
-            <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
-              {renderShoppingList()}
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
+            {renderSuggestionCard()}
+          </Grid>
 
-      {renderItemDetailsModal()}
-    </Stack>
+          <Grid
+            size={{ xs: 12, md: 6 }}
+            sx={{
+              height: { xs: "calc(70vh - 16px)", md: "100%" },
+              p: 1,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Paper
+              sx={{
+                p: { xs: 2, md: 3 },
+                borderRadius: 2,
+                minHeight: "350px",
+                height: "fit-content",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ display: "flex", alignItems: "center", mb: 2 }}
+              >
+                <Badge
+                  badgeContent={shoppingList.length}
+                  color="primary"
+                  sx={{ mr: 1 }}
+                >
+                  <ShoppingCartIcon sx={{ mr: 1 }} />
+                </Badge>
+                My Shopping List
+              </Typography>
+
+              <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+                {renderShoppingList()}
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {renderItemDetailsModal()}
+      </Stack>
+    </>
   );
 };
 

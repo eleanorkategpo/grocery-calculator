@@ -14,6 +14,10 @@ interface StoreState {
   setOpenEditCartModal: (open: boolean) => void;
   editItem: GroceryItem | null;
   setEditItem: (item: GroceryItem | null) => void;
+  shoppingListDrawerOpen: boolean;
+  setShoppingListDrawerOpen: (open: boolean) => void;
+  showInstructions: boolean;
+  setShowInstructions: (show: boolean) => void;
 }
 
 const UserStore = create<StoreState>((set) => ({
@@ -29,6 +33,10 @@ const UserStore = create<StoreState>((set) => ({
   setOpenEditCartModal: (open: boolean) => set({ openEditCartModal: open }),
   editItem: null,
   setEditItem: (item: GroceryItem | null) => set({ editItem: item }),
+  shoppingListDrawerOpen: false,
+  setShoppingListDrawerOpen: (open: boolean) => set({ shoppingListDrawerOpen: open }),
+  showInstructions: true,
+  setShowInstructions: (show: boolean) => set({ showInstructions: show }),
 }));
 
 export default UserStore;

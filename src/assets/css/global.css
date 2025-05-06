@@ -6,9 +6,9 @@
   --secondary-color: #cddc39; /* Lime */
   --secondary-color-light: #f0f4c3; /* Light lime */
   --accent-color: #ffeb3b; /* Bright yellow */
-  --accent-color-2: 	#ffce00;
+  --accent-color-2: #ffce00;
   --accent-color-3: #00d2ff;
-  --neon-green: #39FF14;
+  --neon-green: #39ff14;
   --paper-background-color: #ffffff; /* Pure white */
   --background-color: #8bc34a; /* Bright yellow */
   --text-color: #333333; /* Dark gray for contrast */
@@ -17,11 +17,16 @@
   --error-color: #e53935; /* Strong red */
   --success-color: #43a047; /* Deep green */
   --warning-color: #fdd835; /* Golden yellow */
+  --text-disabled-color: #c8c8c8; /* Gray */
 
   --primary-font: "Lexend", system-ui;
   --secondary-font: "Chewy", system-ui;
 
-  --gradient-color: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  --gradient-color: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
 }
 
 body {
@@ -50,6 +55,20 @@ body {
   }
 }
 
+.chewy-font {
+  font-family: "Chewy", sans-serif !important;
+  p,
+  span,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Chewy", sans-serif !important;
+  }
+}
+
 .MuiInputBase-root:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 30px var(--paper-background-color) inset !important;
   -webkit-text-fill-color: #000;
@@ -58,7 +77,3 @@ body {
 .MuiInputBase-root:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 30px var(--paper-background-color) inset !important;
 }
-
-
-
-

@@ -504,9 +504,18 @@ const ShoppingList = () => {
         </Typography>
       );
     }
-    const handleClearList = () => {
-      axios.delete(`${API_URL}/shopping-list/clear`);
-      setShoppingList([]);
+    const   handleClearList = () => {
+      SwalComponent.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          axios.post(`${API_URL}/shopping-list/clear`);
+          setShoppingList([]);
+        }
+      });
     };
 
     return (
@@ -734,12 +743,7 @@ const ShoppingList = () => {
                   Swipe RIGHT to ADD to your list
                 </Typography>
               </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <TouchAppIcon color="info" />
-                <Typography variant="body1">
-                  TAP an item to view details
-                </Typography>
-              </Box>
+              
             </Stack>
           </Box>
 
@@ -752,6 +756,12 @@ const ShoppingList = () => {
                 <SwipeIcon color="primary" />
                 <Typography variant="body1">
                   Swipe LEFT or RIGHT to adjust quantity
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <TouchAppIcon color="info" />
+                <Typography variant="body1">
+                  TAP an item to view details
                 </Typography>
               </Box>
             </Stack>
@@ -839,7 +849,7 @@ const ShoppingList = () => {
               sx={{
                 p: { xs: 2, md: 3 },
                 borderRadius: 2,
-                minHeight: "350px",
+                minHeight: "180px",
                 height: "fit-content",
                 display: "flex",
                 flexDirection: "column",

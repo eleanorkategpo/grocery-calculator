@@ -259,6 +259,7 @@ const ShoppingList = () => {
           if (result.isConfirmed) {
             await axios.delete(`${API_URL}/shopping-list/remove/${itemId}`);
             setShoppingList(shoppingList.filter((item) => item._id !== itemId));
+            fetchPreviousItems();
           }
         });
       } else {
@@ -513,7 +514,7 @@ const ShoppingList = () => {
       }).then((result) => {
         if (result.isConfirmed) {
           axios.post(`${API_URL}/shopping-list/clear`);
-          setShoppingList([]);
+          fetchPreviousItems();
         }
       });
     };

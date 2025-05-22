@@ -1,23 +1,33 @@
 import React, { useEffect, useState } from "react";
 import {
-    Box,
-    SwipeableDrawer,
-    Typography,
-    Stack,
-    Checkbox,
-    Button,
-    useTheme,
+  Box,
+  SwipeableDrawer,
+  Typography,
+  Stack,
+  Checkbox,
+  Button,
+  useTheme,
+  styled,
 } from "@mui/material";
 import { useSwipeable } from "react-swipeable";
 import SwipeLeft from "../../assets/swipeleft.gif";
 import { ShoppingListItems } from "../../constants/Schema";
-import LoadingOverlay from "../shared/LoadingOverlay";
 import UserStore from "../../store/UserStore";
 import axios from "axios";
 import ServiceStore from "../../store/ServiceStore";
 import { DeleteForever } from "@mui/icons-material";
 import { SwalComponent } from "../shared/SwalComponent";
+import LoadingOverlay from "../shared/LoadingOverlay";
 const API_URL = import.meta.env.VITE_API_URL;
+
+const SwipeArea = styled('div')(({ theme }) => ({
+  position: 'fixed',
+  right: 0,
+  top: 0,
+  bottom: 0,
+  width: 20, // Swipe area width
+  zIndex: theme.zIndex.drawer - 1,
+}));
 
 const ShoppingListDrawer = ({
   drawerOpen,
@@ -135,44 +145,42 @@ const ShoppingListDrawer = ({
   };
 
   return (
-    // wrap entire screen (or whatever area) to catch swipe gestures
-    <div
-      {...handlers}
-      style={{
-        position: "absolute",
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
-      }}
-    >
+    <>
       {instructions}
       <LoadingOverlay loading={fetching} />
+      <SwipeArea {...handlers} />
       <SwipeableDrawer
         anchor="right"
         open={drawerOpen}
         onOpen={toggleDrawer(true)}
         onClose={toggleDrawer(false)}
-        disableScrollLock={true}
-        swipeAreaWidth={0} // you can disable MUI edge swipe if you like
+        disableScrollLock={false}
+        swipeAreaWidth={20}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: { xs: "80%", sm: 300 },
+            position: "fixed",
+            height: "100%",
+            zIndex: (theme) => theme.zIndex.drawer,
+          },
+        }}
       >
         <Stack
-          sx={{ width: { xs: 300 } }}
+          sx={{
+            height: "100%",
+            overflow: "auto",
+          }}
           role="presentation"
           onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
           p={2}
           spacing={1}
           direction="column"
-          overflow="auto"
         >
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="h6">Shopping List</Typography>
             <Button variant="text" onClick={(e) => handleClearShoppingList(e)}>
               <DeleteForever color="error" />
-              <Typography variant="subtitle2" color="error">
-                Clear List
-              </Typography>
             </Button>
           </Stack>
           {shoppingList.length > 0 ? (
@@ -222,7 +230,7 @@ const ShoppingListDrawer = ({
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {item.description} {item.quantity > 1 && `(${item.quantity} ${item.unit})`}
+                  {item.description} {item.quantity > 1 && `(${item.quantity})`}
                 </Typography>
               </Stack>
             ))
@@ -233,25 +241,17 @@ const ShoppingListDrawer = ({
           )}
         </Stack>
       </SwipeableDrawer>
-      
+
       <Box
         sx={{
           "@keyframes pencilStroke": {
-            "0%": {
-              width: "0%",
-              opacity: 0.7,
-            },
-            "30%": {
-              opacity: 0.8,
-            },
-            "100%": {
-              width: "100%",
-              opacity: 1,
-            },
+            "0%": { width: "0%", opacity: 0.7 },
+            "30%": { opacity: 0.8 },
+            "100%": { width: "100%", opacity: 1 },
           },
         }}
       />
-    </div>
+    </>
   );
 };
 

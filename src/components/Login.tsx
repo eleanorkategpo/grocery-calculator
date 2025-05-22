@@ -46,16 +46,29 @@ const Login = () => {
         throw new Error("Password must be at least 6 characters");
       }
 
-      const res = await axios.post(`${API_URL}/auth/login`, {
-        email,
-        password,
-      });
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${res.data.token}`;
-      localStorage.setItem("user", JSON.stringify(res.data));
-      enqueueSnackbar("Login successful!", { variant: "success" });
-      navigate("/dashboard/new-grocery");
+      axios
+        .post(`${API_URL}/auth/login`, {
+          email,
+          password,
+        })
+        .then((res) => {
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${res.data.token}`;
+          localStorage.setItem("user", JSON.stringify(res.data));
+          enqueueSnackbar("Login successful!", { variant: "success" });
+          navigate("/dashboard/new-grocery");
+        })
+        .catch((err) => {
+          setError(
+            err?.response?.data?.message ??
+              err?.message ??
+              "Authentication failed"
+          );
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     } catch (err: any) {
       setError(
         err?.response?.data?.message ?? err?.message ?? "Authentication failed"

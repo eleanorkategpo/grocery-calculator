@@ -32,7 +32,7 @@ function App() {
   axios.interceptors.response.use(
     (response) => response,
     (error) => {
-      if (error.response.status === 401) {
+      if (error.response?.status === 401) {
         serviceStore.handleLogout();
       }
       return Promise.reject(error);

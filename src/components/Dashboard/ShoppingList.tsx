@@ -11,6 +11,11 @@ import {
   Avatar,
   Button,
   Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import {
   motion,
@@ -28,7 +33,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { GroceryItem } from "../../constants/Schema";
 import CloseIcon from "@mui/icons-material/Close";
-import { DeleteForever, DoNotTouch } from "@mui/icons-material";
+import { Add, DeleteForever, DoNotTouch } from "@mui/icons-material";
 import LoadingOverlay from "../shared/LoadingOverlay";
 import { SwalComponent } from "../shared/SwalComponent";
 import UserStore from "../../store/UserStore";
@@ -95,7 +100,7 @@ const ShoppingListItemCard = ({
               {item.description}
             </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>
-              ₱{item.price.toFixed(2)} each
+              ₱{item.price?.toFixed(2)} each
             </Typography>
           </Box>
 
@@ -149,6 +154,8 @@ const ShoppingList = () => {
     null
   );
   const [showItemDetails, setShowItemDetails] = useState(false);
+
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
 
   // Add state for swipe direction animation
   const [swipeDirection, setSwipeDirection] = useState<
@@ -217,7 +224,12 @@ const ShoppingList = () => {
   // Add item to shopping list
   const addToShoppingList = async (item: GroceryItem) => {
     try {
-      await axios.post(`${API_URL}/shopping-list/add`, { itemId: item._id });
+      await axios.post(`${API_URL}/shopping-list/add`, {
+        groceryItemId: item._id,
+        description: item.description,
+        quantity: item.quantity,
+        price: item.price,
+      });
 
       // Update local state - either add new item or increase quantity
       const existingItemIndex = shoppingList.findIndex(
@@ -267,6 +279,8 @@ const ShoppingList = () => {
         updatedList[existingItemIndex].quantity = newQuantity;
         setShoppingList(updatedList);
         await axios.patch(`${API_URL}/shopping-list/update-item/${itemId}`, {
+          groceryItemId: itemId,
+          description: updatedList[existingItemIndex].description,
           quantity: newQuantity,
         });
       }
@@ -505,7 +519,7 @@ const ShoppingList = () => {
         </Typography>
       );
     }
-    const   handleClearList = () => {
+    const handleClearList = () => {
       SwalComponent.fire({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
@@ -551,7 +565,7 @@ const ShoppingList = () => {
               (acc, item) => acc + (item.price ?? 0) * (item.quantity ?? 1),
               0
             )
-            .toFixed(2)}
+            ?.toFixed(2)}
         </Typography>
       </Stack>
     );
@@ -610,7 +624,7 @@ const ShoppingList = () => {
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="body1">Price:</Typography>
                 <Typography variant="body1" fontWeight="bold">
-                  ₱{selectedItem.price.toFixed(2)}
+                  ₱{selectedItem.price?.toFixed(2)}
                 </Typography>
               </Box>
 
@@ -644,7 +658,7 @@ const ShoppingList = () => {
                   fontWeight="bold"
                   color="primary.main"
                 >
-                  ₱{(selectedItem.price * selectedItem.quantity).toFixed(2)}
+                  ₱{(selectedItem.price * selectedItem.quantity)?.toFixed(2)}
                 </Typography>
               </Box>
 
@@ -744,7 +758,6 @@ const ShoppingList = () => {
                   Swipe RIGHT to ADD to your list
                 </Typography>
               </Box>
-              
             </Stack>
           </Box>
 
@@ -782,6 +795,76 @@ const ShoppingList = () => {
           </Box>
         </Paper>
       </Stack>
+    );
+  };
+
+  const handleAddItem = (description: string, price: number | null) => {
+    axios
+      .post(`${API_URL}/shopping-list/add`, {
+        description,
+        quantity: 1,
+        price: price ?? 0,
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          setShowAddItemModal(false);
+          fetchShoppingList();
+        }
+      });
+  };
+
+  const renderAddItemModal = () => {
+    const [newItemDescription, setNewItemDescription] = useState("");
+    const [newItemPrice, setNewItemPrice] = useState<number | null>(null);
+    return (
+      <Dialog
+        open={showAddItemModal}
+        onClose={() => {
+          setShowAddItemModal(false);
+          setNewItemDescription("");
+          setNewItemPrice(0);
+        }}
+      >
+        <DialogTitle>Add Item</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} direction="column" mt={1}>
+            <TextField
+              label="Item Description"
+              fullWidth
+              value={newItemDescription}
+              onChange={(e) => setNewItemDescription(e.target.value)}
+              variant="outlined"
+            />
+
+            {/* Price */}
+            <TextField
+              label="Price"
+              type="number"
+              fullWidth
+              value={newItemPrice}
+              onChange={(e) => {
+                const value = e.target.value.replace(/^0+/, ""); // Remove leading zeros
+                setNewItemPrice(value ? Number(value) : null); // Convert to number or set to empty string
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">₱</InputAdornment>
+                ),
+              }}
+            />
+
+            {/* Add button */}
+            <Button
+              variant="contained"
+              disabled={!newItemDescription || !newItemPrice}
+              onClick={() => handleAddItem(newItemDescription, newItemPrice)}
+              sx={{ color: "white", bgcolor: "var(--success-color)" }}
+            >
+              <Add />
+            </Button>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     );
   };
 
@@ -857,19 +940,29 @@ const ShoppingList = () => {
                 overflow: "hidden",
               }}
             >
-              <Typography
-                variant="h6"
-                sx={{ display: "flex", alignItems: "center", mb: 2 }}
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ mb: 2 }}
               >
-                <Badge
-                  badgeContent={shoppingList.length}
-                  color="primary"
-                  sx={{ mr: 1 }}
+                <Typography
+                  variant="h6"
+                  sx={{ display: "flex", alignItems: "center" }}
                 >
-                  <ShoppingCartIcon sx={{ mr: 1 }} />
-                </Badge>
-                My Shopping List
-              </Typography>
+                  <Badge
+                    badgeContent={shoppingList.length}
+                    color="primary"
+                    sx={{ mr: 1 }}
+                  >
+                    <ShoppingCartIcon sx={{ mr: 1 }} />
+                  </Badge>
+                  My Shopping List
+                </Typography>
+                <IconButton onClick={() => setShowAddItemModal(true)}>
+                  <AddShoppingCartIcon sx={{ color: "var(--success-color)" }} />
+                </IconButton>
+              </Stack>
 
               <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
                 {renderShoppingList()}
@@ -879,6 +972,7 @@ const ShoppingList = () => {
         </Grid>
 
         {renderItemDetailsModal()}
+        {renderAddItemModal()}
       </Stack>
     </>
   );

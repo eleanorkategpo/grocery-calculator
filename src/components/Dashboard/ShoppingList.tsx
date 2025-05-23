@@ -811,6 +811,8 @@ const ShoppingList = () => {
         if (res.status === 200) {
           setShowAddItemModal(false);
           fetchShoppingList();
+          setNewItemDescription("");
+          setNewItemPrice(0);
         }
       });
   };

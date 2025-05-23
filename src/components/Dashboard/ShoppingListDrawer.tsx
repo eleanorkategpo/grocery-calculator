@@ -4,11 +4,9 @@ import {
   SwipeableDrawer,
   Typography,
   Stack,
-  Checkbox,
-  Button,
-  useTheme,
+  Checkbox, useTheme,
   styled,
-  IconButton,
+  IconButton
 } from "@mui/material";
 import { useSwipeable } from "react-swipeable";
 import SwipeLeft from "../../assets/swipeleft.gif";

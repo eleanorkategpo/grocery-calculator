@@ -34,7 +34,6 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { GroceryItem } from "../../constants/Schema";
 import CloseIcon from "@mui/icons-material/Close";
 import { Add, DeleteForever, DoNotTouch } from "@mui/icons-material";
-import LoadingOverlay from "../shared/LoadingOverlay";
 import { SwalComponent } from "../shared/SwalComponent";
 import UserStore from "../../store/UserStore";
 import SwipeLeftIcon from "@mui/icons-material/SwipeLeft";

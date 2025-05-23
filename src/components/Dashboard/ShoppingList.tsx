@@ -797,6 +797,9 @@ const ShoppingList = () => {
     );
   };
 
+   const [newItemDescription, setNewItemDescription] = useState("");
+   const [newItemPrice, setNewItemPrice] = useState<number | null>(null);
+
   const handleAddItem = (description: string, price: number | null) => {
     axios
       .post(`${API_URL}/shopping-list/add`, {
@@ -811,10 +814,8 @@ const ShoppingList = () => {
         }
       });
   };
-
+ 
   const renderAddItemModal = () => {
-    const [newItemDescription, setNewItemDescription] = useState("");
-    const [newItemPrice, setNewItemPrice] = useState<number | null>(null);
     return (
       <Dialog
         open={showAddItemModal}
@@ -855,8 +856,10 @@ const ShoppingList = () => {
             {/* Add button */}
             <Button
               variant="contained"
-              disabled={!newItemDescription || !newItemPrice}
-              onClick={() => handleAddItem(newItemDescription, newItemPrice)}
+              disabled={!newItemDescription}
+              onClick={() =>
+                handleAddItem(newItemDescription, newItemPrice ?? 0)
+              }
               sx={{ color: "white", bgcolor: "var(--success-color)" }}
             >
               <Add />

@@ -885,7 +885,7 @@ const ShoppingList = () => {
           overflow: "auto",
         }}
       >
-        <LoadingOverlay loading={loadingPrevious || loadingShoppingList} />
+        {/* <LoadingOverlay loading={loadingPrevious || loadingShoppingList} /> */}
         <Grid
           container
           spacing={{ xs: 1, md: 2 }}

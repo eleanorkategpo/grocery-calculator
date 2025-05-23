@@ -8,6 +8,7 @@ import {
   Button,
   useTheme,
   styled,
+  IconButton,
 } from "@mui/material";
 import { useSwipeable } from "react-swipeable";
 import SwipeLeft from "../../assets/swipeleft.gif";
@@ -20,8 +21,8 @@ import { SwalComponent } from "../shared/SwalComponent";
 import LoadingOverlay from "../shared/LoadingOverlay";
 const API_URL = import.meta.env.VITE_API_URL;
 
-const SwipeArea = styled('div')(({ theme }) => ({
-  position: 'fixed',
+const SwipeArea = styled("div")(({ theme }) => ({
+  position: "fixed",
   right: 0,
   top: 0,
   bottom: 0,
@@ -56,7 +57,7 @@ const ShoppingListDrawer = ({
     (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
       // ignore tab/shift key presses
       if (
-        event.type === "keydown" &&
+        event?.type === "keydown" &&
         ((event as React.KeyboardEvent).key === "Tab" ||
           (event as React.KeyboardEvent).key === "Shift")
       ) {
@@ -115,9 +116,12 @@ const ShoppingListDrawer = ({
 
   const handleCheckboxChange = async (itemId: string, checked: boolean) => {
     try {
-      const response = await axios.patch(`${API_URL}/shopping-list/update-item/${itemId}`, {
-        checked,
-      });
+      const response = await axios.patch(
+        `${API_URL}/shopping-list/update-item/${itemId}`,
+        {
+          checked,
+        }
+      );
       if (response.status === 200) {
         setShoppingList(
           shoppingList.map((item) =>
@@ -132,8 +136,8 @@ const ShoppingListDrawer = ({
 
   const handleClearShoppingList = (e: React.MouseEvent) => {
     SwalComponent.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      title: "Clear Shopping List?",
+      text: "This action will remove all items from your shopping list. Are you sure you want to proceed?",
       icon: "warning",
       showCancelButton: true,
     }).then((result) => {
@@ -179,9 +183,9 @@ const ShoppingListDrawer = ({
         >
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="h6">Shopping List</Typography>
-            <Button variant="text" onClick={(e) => handleClearShoppingList(e)}>
-              <DeleteForever color="error" />
-            </Button>
+            <IconButton onClick={(e) => handleClearShoppingList(e)}>
+              <DeleteForever sx={{ color: "red" }} />
+            </IconButton>
           </Stack>
           {shoppingList.length > 0 ? (
             shoppingList.map((item) => (
@@ -256,5 +260,3 @@ const ShoppingListDrawer = ({
 };
 
 export default ShoppingListDrawer;
-
-

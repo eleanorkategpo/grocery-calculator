@@ -46,6 +46,7 @@ export const getTheme = (): ThemeOptions => {
                 color: cssVar("--text-color-dark"),
               },
             },
+   
           },
         },
       },

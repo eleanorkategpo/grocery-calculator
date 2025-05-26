@@ -154,8 +154,7 @@ const AddModal = () => {
     price: Yup.number(),
     quantity: Yup.number()
       .required("Quantity is required")
-      .positive("Quantity must be positive")
-      .integer("Quantity must be an integer"),
+      .positive("Quantity must be positive"),
     unit: Yup.string().required("Unit is required"),
   });
 
@@ -356,7 +355,6 @@ const AddModal = () => {
                     onClick={() => randomizeBarcode(setFieldValue)}
                     sx={{
                       backgroundColor: "var(--primary-color)",
-                      color: "white",
                       borderRadius: 10,
                       padding: 1,
                     }}
@@ -421,16 +419,19 @@ const AddModal = () => {
                 </IconButton>
                 <TextField
                   name="quantity"
+
+                  //accept decimal
                   type="number"
                   variant="outlined"
                   fullWidth
                   margin="normal"
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    setFieldValue("quantity", e.target.value);
+                  }}
                   onBlur={handleBlur}
                   value={values.quantity}
                   error={touched.quantity && Boolean(errors.quantity)}
                   helperText={touched.quantity && errors.quantity}
-                  inputProps={{ min: 1 }}
                   sx={{
                     flex: 1,
                     minWidth: { xs: 100, md: 150 },

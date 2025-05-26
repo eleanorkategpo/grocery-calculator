@@ -77,3 +77,16 @@ body {
 .MuiInputBase-root:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 30px var(--paper-background-color) inset !important;
 }
+
+.MuiButtonBase-root.MuiButton-contained svg,
+.MuiButtonBase-root.MuiFab-root svg {
+  color: var(--secondary-color-light) !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}

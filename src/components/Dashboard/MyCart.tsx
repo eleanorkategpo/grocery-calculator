@@ -67,6 +67,7 @@ const MyCart = () => {
             paddingBottom: 20,
             color: "white",
           }}
+          className="hide-scrollbar"
         >
           <LoadingOverlay loading={loading} />
 

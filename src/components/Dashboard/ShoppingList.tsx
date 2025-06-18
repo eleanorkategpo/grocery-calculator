@@ -223,6 +223,7 @@ const ShoppingList = () => {
   // Add item to shopping list
   const addToShoppingList = async (item: GroceryItem) => {
     try {
+      showNextItem();
       await axios.post(`${API_URL}/shopping-list/add`, {
         groceryItemId: item._id,
         description: item.description,
@@ -540,7 +541,7 @@ const ShoppingList = () => {
             sx={{ color: "white", bgcolor: "var(--error-color)" }}
             onClick={handleClearList}
           >
-            <DeleteForever sx={{ mr: 1, color: "white" }} />
+            <DeleteForever sx={{ mr: 1, color: "white !important" }} />
             Clear List
           </Button>
         )}

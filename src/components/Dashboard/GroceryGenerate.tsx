@@ -214,7 +214,7 @@ const GroceryGenerate = () => {
                       boxShadow: 6,
                     },
                   }}
-                  disabled={!groceryStore || (!noBudgetLimit && !budget)}
+                  disabled={!groceryStore || (!noBudgetLimit && !budget) || isLoading}
                 >
                   Start Shopping
                 </Button>

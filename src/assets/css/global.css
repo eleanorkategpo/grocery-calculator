@@ -80,7 +80,7 @@ body {
 
 .MuiButtonBase-root.MuiButton-contained svg,
 .MuiButtonBase-root.MuiFab-root svg {
-  color: var(--secondary-color-light) !important;
+  color: var(--secondary-color-light);
 }
 
 .hide-scrollbar::-webkit-scrollbar {

@@ -6,12 +6,13 @@ import {
   Typography,
   Button,
   Modal,
-  IconButton, Tooltip,
+  IconButton,
+  Tooltip,
   MenuItem,
   Select,
   FormControl,
   Divider,
-  Autocomplete
+  Autocomplete,
 } from "@mui/material";
 import UserStore from "../../store/UserStore";
 import { Formik, Form, useField } from "formik";
@@ -28,6 +29,7 @@ import { enqueueSnackbar } from "notistack";
 import { useParams } from "react-router-dom";
 import { Save } from "@mui/icons-material";
 import debounce from "lodash/debounce";
+import { useGrandTotals } from "./MyCart";
 const API_URL = import.meta.env.VITE_API_URL;
 const BoxStyled = styled(Box)(() => ({
   backgroundColor: "white",
@@ -52,11 +54,11 @@ const DescriptionAutocompleteField = memo(
   ({
     name,
     label,
-    setFieldValue,
+    handleChange,
   }: {
     name: string;
     label: string;
-    setFieldValue: (field: string, value: any) => void;
+    handleChange: (value: any) => void;
   }) => {
     const [field, meta, helpers] = useField<string>(name);
     const { value, onBlur } = field;
@@ -89,6 +91,7 @@ const DescriptionAutocompleteField = memo(
     useEffect(() => {
       debouncedFetchLocal(inputValue);
     }, [inputValue, debouncedFetchLocal]);
+
     return (
       <Stack direction="column" spacing={1}>
         <Autocomplete
@@ -100,21 +103,23 @@ const DescriptionAutocompleteField = memo(
           }
           value={value}
           inputValue={inputValue}
-          onInputChange={(_e, newValue) => setInputValue(newValue)}
+          onInputChange={(_e, newValue) => {
+            setInputValue(newValue);
+            handleChange({ description: newValue });
+          }}
           onChange={(_e, newValue) => {
-            let desc = "";
             // if selecting an existing item object, autofill details
             if (newValue && typeof newValue === "object") {
-              desc = newValue.description;
-              setFieldValue("barcode", newValue.barcode);
-              setFieldValue("price", newValue.price.toString());
-              setFieldValue("quantity", newValue.quantity);
-              setFieldValue("unit", newValue.unit);
+
+              // Ensure all states are synchronized
+              setValue(newValue.description);
+              setInputValue(newValue.description);
+              handleChange(newValue);
             } else if (typeof newValue === "string") {
-              desc = newValue;
+              setValue(newValue);
+              setInputValue(newValue);
+              handleChange({ description: newValue });
             }
-            setValue(desc);
-            setInputValue(desc);
           }}
           blurOnSelect
           selectOnFocus
@@ -263,6 +268,7 @@ const AddModal = () => {
     }
   };
 
+  const { grandTotal, isOverBudget } = useGrandTotals();
   return (
     <Modal open={userStore.openAddModal} onClose={handleClose}>
       <BoxStyled>
@@ -363,12 +369,30 @@ const AddModal = () => {
                   </IconButton>
                 </Tooltip>
               </Stack>
-
               {/* Description + autofill details */}
               <DescriptionAutocompleteField
                 name="description"
                 label="Item Description"
-                setFieldValue={setFieldValue}
+                handleChange={(newValue: any) => {
+                  if (newValue.barcode) {
+                    setFieldValue("barcode", newValue.barcode);
+                  }
+                  if (newValue.quantity) {
+                    setFieldValue("quantity", newValue.quantity ?? 1);
+                  }
+                  if (newValue.unit) {
+                    setFieldValue("unit", newValue.unit ?? "pc");
+                  }
+                  if (newValue.description) {
+                    setFieldValue("description", newValue.description);
+                  }
+                  if (values.price === "0.00" && newValue.price) {
+                    setFieldValue(
+                      "price",
+                      newValue.price ? newValue.price.toString() : "0.00"
+                    );
+                  }
+                }}
               />
               <CurrencyInput
                 name="price"
@@ -419,7 +443,6 @@ const AddModal = () => {
                 </IconButton>
                 <TextField
                   name="quantity"
-
                   //accept decimal
                   type="number"
                   variant="outlined"
@@ -490,6 +513,20 @@ const AddModal = () => {
                       currency: "PHP",
                     }).format(Number(values.price) * Number(values.quantity))}
                   </Typography>
+
+                  {/* //Current Total Price */}
+                  <Typography
+                    variant="subtitle2"
+                    color={isOverBudget ? "var(--error-color)" : "var(--text-color)"}
+                    mt={2}
+                  >
+                    Current Cart Total:{" "}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "PHP",
+                    }).format(grandTotal)}
+                  </Typography>
+              
                 </Box>
                 <Button
                   type="submit"

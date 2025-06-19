@@ -1,11 +1,4 @@
-import {
-  Box,
-  Divider,
-  Paper,
-  Typography,
-  Grid,
-  Stack
-} from "@mui/material";
+import { Box, Divider, Paper, Typography, Grid, Stack } from "@mui/material";
 import UserStore from "../../store/UserStore";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -62,8 +55,8 @@ const MyCart = () => {
             width: "100%",
             maxWidth: "500px",
             margin: "0 auto",
-            height: '100%',
-            overflow: 'auto', // Enable scrolling
+            height: "100%",
+            overflow: "auto", // Enable scrolling
             paddingBottom: 20,
             color: "white",
           }}
@@ -130,7 +123,9 @@ const MyCart = () => {
                         gap: 1,
                       }}
                     >
-                      <Typography variant="body1">{item.description}</Typography>
+                      <Typography variant="body1">
+                        {item.description}
+                      </Typography>
                     </Grid>
                     <Grid
                       size={{ xs: 1 }}
@@ -189,7 +184,9 @@ const MyCart = () => {
                           currency: "PHP",
                         }).format(item.total)}
                       </Typography>
-                      {item.price == 0 && <PriorityHigh sx={{ color: "red" }} />}
+                      {item.price == 0 && (
+                        <PriorityHigh sx={{ color: "red" }} />
+                      )}
                     </Grid>
                   </Grid>
                 );
@@ -227,19 +224,8 @@ const MyCart = () => {
 };
 
 const GrandTotal = ({ groceryData }: { groceryData: Grocery | null }) => {
-  const userStore = UserStore();
-  const grandTotal =
-    userStore.groceryData?.items?.reduce((acc, item) => acc + item?.total, 0) ??
-    0;
-  const [isOverBudget, setIsOverBudget] = useState(false);
-
-  useEffect(() => {
-    if (grandTotal > (groceryData?.budget ?? 0)) {
-      setIsOverBudget(true);
-    } else {
-      setIsOverBudget(false);
-    }
-  }, [grandTotal, groceryData?.budget]);
+  const { grandTotal, isOverBudget } = useGrandTotals();
+  const userStore = UserStore(); 
 
   return (
     <>
@@ -286,6 +272,17 @@ const GrandTotal = ({ groceryData }: { groceryData: Grocery | null }) => {
       </Box>
     </>
   );
+};
+
+export const useGrandTotals = () => {
+  const userStore = UserStore();
+  const grandTotal =
+    userStore.groceryData?.items?.reduce((acc, item) => acc + item?.total, 0) ??
+    0;
+  const isOverBudget =
+    userStore.groceryData?.budget &&
+    grandTotal > (userStore.groceryData?.budget ?? 0);
+  return { grandTotal, isOverBudget };
 };
 
 export default MyCart;

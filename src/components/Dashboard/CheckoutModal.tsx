@@ -6,11 +6,12 @@ import {
   Typography,
   Button,
   Modal,
-  IconButton, InputLabel,
+  IconButton,
+  InputLabel,
   FormControl,
   Select,
   MenuItem,
-  CircularProgress
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
@@ -19,6 +20,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { enqueueSnackbar } from "notistack";
 import CurrencyInput from "react-currency-input-field";
+import Swal from "sweetalert2";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -77,11 +79,22 @@ const CheckoutModal = () => {
           variant: "success",
         });
 
-        // Close modal and navigate to dashboard
         handleClose();
-        setTimeout(() => {
-          navigate("/dashboard/previous-carts");
-        }, 1000);
+        //Swal - do you want to clear shopping list?
+        Swal.fire({
+          title: "Do you want to clear shopping list?",
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            //clear shopping list
+            await axios.delete(`${API_URL}/shopping-list/${groceryId}`);
+          }
+          // Close modal and navigate to dashboard
+          setTimeout(() => {
+            navigate("/dashboard/previous-carts");
+          }, 1000);
+        });
       }
     } catch (error) {
       console.error("Checkout error:", error);

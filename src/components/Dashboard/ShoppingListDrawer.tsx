@@ -4,9 +4,10 @@ import {
   SwipeableDrawer,
   Typography,
   Stack,
-  Checkbox, useTheme,
+  Checkbox,
+  useTheme,
   styled,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import { useSwipeable } from "react-swipeable";
 import SwipeLeft from "../../assets/swipeleft.gif";
@@ -185,7 +186,9 @@ const ShoppingListDrawer = ({
               <DeleteForever sx={{ color: "red" }} />
             </IconButton>
           </Stack>
-          {shoppingList.length > 0 ? (
+          {fetching && shoppingList.length === 0 ? (
+            <LoadingOverlay loading={fetching} />
+          ) : shoppingList.length > 0 ? (
             shoppingList.map((item) => (
               <Stack
                 key={item._id}
@@ -242,7 +245,7 @@ const ShoppingListDrawer = ({
             </Typography>
           )}
         </Stack>
-      </SwipeableDrawer>
+      </SwipeableDrawer> 
 
       <Box
         sx={{
